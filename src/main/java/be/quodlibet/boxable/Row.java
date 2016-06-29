@@ -4,41 +4,42 @@
  */
 package be.quodlibet.boxable;
 
-import be.quodlibet.boxable.image.Image;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 
-public class Row<T extends PDPage> {
+import be.quodlibet.boxable.image.Image;
 
-    public static Boolean HEADER = true;
-    public static Boolean NOHEADER = false;
-	private Table<T> table;
+public class Row {
+
+	public static Boolean HEADER = true;
+	public static Boolean NOHEADER = false;
+	private Table table;
 	PDOutlineItem bookmark;
-	List<Cell<T>> cells;
+	List<Cell> cells;
 	private boolean headerRow = false;
-    float height;
+	float height;
 
-	Row(Table<T> table, List<Cell<T>> cells, float height) {
+	Row(Table table, List<Cell> cells, float height) {
 		this.table = table;
 		this.cells = cells;
 		this.height = height;
 	}
 
-	Row(Table<T> table, float height) {
+	Row(Table table, float height) {
 		this.table = table;
 		this.cells = new ArrayList<>();
 		this.height = height;
-    }
+	}
 
-    Row(Table<T> table)
-    {
-        this.table = table;
-        this.cells = new ArrayList<>();
+	Row(Table table) {
+		this.table = table;
+		this.cells = new ArrayList<>();
 
-    }
+	}
 
 	/**
 	 * <p>
@@ -50,10 +51,9 @@ public class Row<T extends PDPage> {
 	 * @param value
 	 * @return
 	 */
-    public Cell<T> createCell(float widthPct, String value)
-    {
-        Cell<T> cell = new Cell<T>(this, widthPct, value, true);
-		if(headerRow){
+	public Cell createCell(float widthPct, String value) {
+		Cell cell = new Cell(this, widthPct, value, true);
+		if (headerRow) {
 			// set all cell as header cell
 			cell.setHeaderCell(true);
 		}
@@ -77,15 +77,15 @@ public class Row<T extends PDPage> {
 	 *            {@link Image} in the cell
 	 * @return
 	 */
-	public ImageCell<T> createImageCell(float width, Image img) {
-		ImageCell<T> cell = new ImageCell<>(this, width, img, true);
+	public ImageCell createImageCell(float width, Image img) {
+		ImageCell cell = new ImageCell(this, width, img, true);
 		setBorders(cell, cells.isEmpty());
 		cells.add(cell);
 		return cell;
 	}
 
-	public Cell<T> createImageCell(float width, Image img, HorizontalAlignment align, VerticalAlignment valign) {
-		Cell<T> cell = new ImageCell<T>(this, width, img, true, align, valign);
+	public Cell createImageCell(float width, Image img, HorizontalAlignment align, VerticalAlignment valign) {
+		Cell cell = new ImageCell(this, width, img, true, align, valign);
 		setBorders(cell, cells.isEmpty());
 		cells.add(cell);
 		return cell;
@@ -103,9 +103,9 @@ public class Row<T extends PDPage> {
 	 * @param valign
 	 * @return
 	 */
-	public Cell<T> createCell(float width, String value, HorizontalAlignment align, VerticalAlignment valign) {
-		Cell<T> cell = new Cell<T>(this, width, value, true, align, valign);
-		if(headerRow){
+	public Cell createCell(float width, String value, HorizontalAlignment align, VerticalAlignment valign) {
+		Cell cell = new Cell(this, width, value, true, align, valign);
+		if (headerRow) {
 			// set all cell as header cell
 			cell.setHeaderCell(true);
 		}
@@ -126,29 +126,26 @@ public class Row<T extends PDPage> {
 	 * @param value
 	 * @return
 	 */
-    public Cell<T> createCell(String value)
-    {
-        float headerCellWidth = 0;
-        float headerCellWidthPct = 0;
-        if (table.getHeader().getCells().size() > cells.size() & !this.isHeaderRow()) {
-            headerCellWidth = table.getHeader().getCells().get(cells.size()).getWidth();
-            headerCellWidthPct = table.getHeader().getCells().get(cells.size()).getWidthPct();
-        }
-        else {
-           headerCellWidth = 0;
-           headerCellWidthPct = 0;
-        }
-            Cell<T> cell;
-            if (headerCellWidth > 0) {
-                cell = new Cell<T>(this, headerCellWidth, value, false);
-            }
-            else {
-                //The header cell has no width yet, use the percentage
-                cell = new Cell<T>(this, headerCellWidthPct, value, true);
-            }
-            setBorders(cell, cells.isEmpty());
-            cells.add(cell);
-            return cell;
+	public Cell createCell(String value) {
+		float headerCellWidth = 0;
+		float headerCellWidthPct = 0;
+		if (table.getHeader().getCells().size() > cells.size() & !this.isHeaderRow()) {
+			headerCellWidth = table.getHeader().getCells().get(cells.size()).getWidth();
+			headerCellWidthPct = table.getHeader().getCells().get(cells.size()).getWidthPct();
+		} else {
+			headerCellWidth = 0;
+			headerCellWidthPct = 0;
+		}
+		Cell cell;
+		if (headerCellWidth > 0) {
+			cell = new Cell(this, headerCellWidth, value, false);
+		} else {
+			// The header cell has no width yet, use the percentage
+			cell = new Cell(this, headerCellWidthPct, value, true);
+		}
+		setBorders(cell, cells.isEmpty());
+		cells.add(cell);
+		return cell;
 	}
 
 	/**
@@ -160,7 +157,7 @@ public class Row<T extends PDPage> {
 	 * @param cell
 	 * @param leftBorder
 	 */
-	private void setBorders(final Cell<T> cell, final boolean leftBorder) {
+	private void setBorders(final Cell cell, final boolean leftBorder) {
 		if (!leftBorder) {
 			cell.setLeftBorderStyle(null);
 		}
@@ -173,7 +170,7 @@ public class Row<T extends PDPage> {
 	 * </p>
 	 */
 	void removeTopBorders() {
-		for (final Cell<T> cell : cells) {
+		for (final Cell cell : cells) {
 			cell.setTopBorderStyle(null);
 		}
 	}
@@ -187,7 +184,7 @@ public class Row<T extends PDPage> {
 	 */
 	public float getHeight() {
 		float maxheight = 0.0f;
-		for (Cell<T> cell : this.cells) {
+		for (Cell cell : this.cells) {
 			float cellHeight = cell.getCellHeight();
 
 			if (cellHeight > maxheight) {
@@ -197,7 +194,7 @@ public class Row<T extends PDPage> {
 
 		if (maxheight > height) {
 			this.height = maxheight;
-            }
+		}
 
 		return height;
 	}
@@ -210,7 +207,7 @@ public class Row<T extends PDPage> {
 		this.height = height;
 	}
 
-	public List<Cell<T>> getCells() {
+	public List<Cell> getCells() {
 		return cells;
 	}
 
@@ -218,7 +215,7 @@ public class Row<T extends PDPage> {
 		return cells.size();
 	}
 
-	public void setCells(List<Cell<T>> cells) {
+	public void setCells(List<Cell> cells) {
 		this.cells = cells;
 	}
 
@@ -236,7 +233,7 @@ public class Row<T extends PDPage> {
 
 	protected float getLastCellExtraWidth() {
 		float cellWidth = 0;
-		for (Cell<T> cell : cells) {
+		for (Cell cell : cells) {
 			cellWidth += cell.getWidth();
 		}
 
@@ -254,23 +251,21 @@ public class Row<T extends PDPage> {
 
 	public void setHeaderRow(boolean headerRow) {
 		this.headerRow = headerRow;
-    }
-    public void initWidths()
-    {
+	}
 
-        for (Cell c : cells) {
-            c.setWidth(0);
-        }
-    }
-    public Table<T> getTable()
-    {
-        return table;
-    }
+	public void initWidths() {
 
-    public int getRowIndex()
-    {
-        return table.getRows().indexOf(this);
-    }
+		for (Cell c : cells) {
+			c.setWidth(0);
+		}
+	}
 
+	public Table getTable() {
+		return table;
+	}
+
+	public int getRowIndex() {
+		return table.getRows().indexOf(this);
+	}
 
 }

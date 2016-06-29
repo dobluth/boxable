@@ -4,18 +4,20 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
-public interface PageProvider<T extends PDPage> {
+public interface PageProvider {
 
-	T createPage();
+	PDPage createPage();
 
-	T nextPage();
+	PDPage nextPage();
 
-    T previousPage();
+	PDPage previousPage();
 
-    T getCurrentPage();
+	PDPage getCurrentPage();
 
-    void setSize(PDRectangle size);
-    PDRectangle getSize();
-    PDDocument getDocument();
+	void setSize(PDRectangle size);
+
+	PDRectangle getSize();
+
+	PDDocument getDocument();
 
 }

@@ -4,19 +4,20 @@
  */
 package be.quodlibet.boxable;
 
-import be.quodlibet.boxable.layout.DefaultCellLayouter;
-import be.quodlibet.boxable.line.LineStyle;
-import be.quodlibet.boxable.text.WrappingFunction;
 import java.awt.Color;
 import java.io.IOException;
-import org.apache.pdfbox.pdmodel.PDPage;
+
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
-public class Cell<T extends PDPage> {
+import be.quodlibet.boxable.layout.DefaultCellLayouter;
+import be.quodlibet.boxable.line.LineStyle;
+import be.quodlibet.boxable.text.WrappingFunction;
 
-    private float width;
-    private float widthPct;
+public class Cell {
+
+	private float width;
+	private float widthPct;
 	private Float height;
 	private String text;
 
@@ -26,7 +27,7 @@ public class Cell<T extends PDPage> {
 	private float fontSize = 8;
 	private Color fillColor;
 	private Color textColor = Color.BLACK;
-	private Row<T> row;
+	private Row row;
 	private WrappingFunction wrappingFunction;
 	private boolean isHeaderCell = false;
 	private boolean isColspanCell = false;
@@ -47,8 +48,8 @@ public class Cell<T extends PDPage> {
 
 	private boolean textRotated = false;
 
-    private HorizontalAlignment align = HorizontalAlignment.LEFT;
-    private VerticalAlignment valign = VerticalAlignment.TOP;
+	private HorizontalAlignment align = HorizontalAlignment.LEFT;
+	private VerticalAlignment valign = VerticalAlignment.TOP;
 
 	float horizontalFreeSpace = 0;
 	float verticalFreeSpace = 0;
@@ -66,10 +67,9 @@ public class Cell<T extends PDPage> {
 	 * @see Cell#Cell(Row, float, String, boolean, HorizontalAlignment,
 	 *      VerticalAlignment)
 	 */
-    Cell(Row<T> row, float widthPct, String text, boolean isCalculated)
-    {
+	Cell(Row row, float widthPct, String text, boolean isCalculated) {
 
-        this(row, widthPct, text, isCalculated, HorizontalAlignment.LEFT, VerticalAlignment.TOP);
+		this(row, widthPct, text, isCalculated, HorizontalAlignment.LEFT, VerticalAlignment.TOP);
 	}
 
 	/**
@@ -93,11 +93,10 @@ public class Cell<T extends PDPage> {
 	 *            The {@link VerticalAlignment} of the cell content
 	 * @see Cell#Cell(Row, float, String, boolean)
 	 */
-	Cell(Row<T> row, float width, String text, boolean isCalculated, HorizontalAlignment align,
-			VerticalAlignment valign) {
+	Cell(Row row, float width, String text, boolean isCalculated, HorizontalAlignment align, VerticalAlignment valign) {
 		this.row = row;
-            if (isCalculated) {
-                this.widthPct = width;
+		if (isCalculated) {
+			this.widthPct = width;
 			double calclulatedWidth = ((row.getWidth() * width) / 100);
 			this.width = (float) calclulatedWidth;
 		} else {
@@ -114,11 +113,10 @@ public class Cell<T extends PDPage> {
 		this.wrappingFunction = null;
 	}
 
-     Cell(float width, String text)
-    {
-        this.width = width;
-        this.text = text;
-    }
+	Cell(float width, String text) {
+		this.width = width;
+		this.text = text;
+	}
 
 	/**
 	 * <p>
@@ -173,13 +171,12 @@ public class Cell<T extends PDPage> {
 	 *
 	 * @return Cell's width
 	 */
-    public float getWidth()
-    {
-        if (width == 0 && widthPct != 0) {
-            width = (row.getWidth() * widthPct) / 100;
-        }
+	public float getWidth() {
+		if (width == 0 && widthPct != 0) {
+			width = (row.getWidth() * widthPct) / 100;
+		}
 
-        return width;
+		return width;
 	}
 
 	/**
@@ -241,12 +238,11 @@ public class Cell<T extends PDPage> {
 	 * @throws IllegalArgumentException
 	 *             if <code>font</code> is not set.
 	 */
-    public PDFont getFont()
-    {
-        if (font == null) {
-            //Get the default font for the row
-            font = row.getTable().getFont();
-        }
+	public PDFont getFont() {
+		if (font == null) {
+			// Get the default font for the row
+			font = row.getTable().getFont();
+		}
 		if (font == null) {
 			throw new IllegalArgumentException("Font not set.");
 		}
@@ -358,11 +354,13 @@ public class Cell<T extends PDPage> {
 	 * which returns the row's height.
 	 * </p>
 	 * <p>
-	 * Depending of rotated/normal cell's value there is two cases for calculation:
+	 * Depending of rotated/normal cell's value there is two cases for
+	 * calculation:
 	 * <ol>
-	 * <li>Rotated value - cell's height is equal to overall text length in the cell with necessery paddings (top,bottom)</li>
-	 * <li>Normal value - cell's height is equal to {@link Paragraph}'s height with
-	 * necessery paddings (top,bottom)</li>
+	 * <li>Rotated value - cell's height is equal to overall text length in the
+	 * cell with necessery paddings (top,bottom)</li>
+	 * <li>Normal value - cell's height is equal to {@link Paragraph}'s height
+	 * with necessery paddings (top,bottom)</li>
 	 * </ol>
 	 * </p>
 	 *
@@ -396,7 +394,8 @@ public class Cell<T extends PDPage> {
 	 * Sets the height of the single cell.
 	 * </p>
 	 *
-	 * @param height Cell's height
+	 * @param height
+	 *            Cell's height
 	 */
 	public void setHeight(final Float height) {
 		this.height = height;
@@ -528,19 +527,17 @@ public class Cell<T extends PDPage> {
 	 * </p>
 	 *
 	 * <p>
-	 * If cell has rotated value then free vertical space is equal inner cell's height
-	 * ({@link #getInnerHeight()}) subtracted to the longest line of rotated
-	 * {@link Paragraph} otherwise it's just cell's inner height ({@link #getInnerHeight()})
-	 * subtracted with width of the normal {@link Paragraph}.
+	 * If cell has rotated value then free vertical space is equal inner cell's
+	 * height ({@link #getInnerHeight()}) subtracted to the longest line of
+	 * rotated {@link Paragraph} otherwise it's just cell's inner height
+	 * ({@link #getInnerHeight()}) subtracted with width of the normal
+	 * {@link Paragraph}.
 	 * </p>
 	 *
 	 * @return Free vertical space of the cell's.
 	 */
 	public float getVerticalFreeSpace() {
 		if (isTextRotated()) {
-			// need to calculate max line width so we just iterating through lines
-			for(String line : getParagraph().getLines()){
-			}
 			return getInnerHeight() - getParagraph().getMaxLineWidth();
 		} else {
 			return getInnerHeight() - getTextHeight();
@@ -553,10 +550,11 @@ public class Cell<T extends PDPage> {
 	 * </p>
 	 *
 	 * <p>
-	 * If cell has rotated value then free horizontal space is equal cell's inner width
-	 * ({@link #getInnerWidth()}) subtracted to the {@link Paragraph}'s height
-	 * otherwise it's just cell's {@link #getInnerWidth()} subtracted with width
-	 * of longest line in normal {@link Paragraph}.
+	 * If cell has rotated value then free horizontal space is equal cell's
+	 * inner width ({@link #getInnerWidth()}) subtracted to the
+	 * {@link Paragraph}'s height otherwise it's just cell's
+	 * {@link #getInnerWidth()} subtracted with width of longest line in normal
+	 * {@link Paragraph}.
 	 * </p>
 	 * </p>
 	 *
@@ -579,11 +577,10 @@ public class Cell<T extends PDPage> {
 		return valign;
 	}
 
-    public boolean isHeaderCell()
-    {
-        isHeaderCell = row.isHeaderRow();
-        return isHeaderCell;
-        //return isHeaderCell;
+	public boolean isHeaderCell() {
+		isHeaderCell = row.isHeaderRow();
+		return isHeaderCell;
+		// return isHeaderCell;
 	}
 
 	public void setHeaderCell(boolean isHeaderCell) {
@@ -634,8 +631,11 @@ public class Cell<T extends PDPage> {
 	}
 
 	/**
-	 * <p> Easy setting for cell border style.
-	 * @param border It is {@link LineStyle} for all borders
+	 * <p>
+	 * Easy setting for cell border style.
+	 * 
+	 * @param border
+	 *            It is {@link LineStyle} for all borders
 	 * @see {@link LineStyle} for rendering line attributes
 	 */
 	public void setBorderStyle(LineStyle border) {
@@ -651,26 +651,24 @@ public class Cell<T extends PDPage> {
 
 	public void setTextRotated(boolean textRotated) {
 		this.textRotated = textRotated;
-    }
+	}
 
-    public PDFont getFontBold()
-    {
-        return fontBold;
-    }
+	public PDFont getFontBold() {
+		return fontBold;
+	}
 
-    /**
-     * <p>
-     * Sets the {@linkplain PDFont font} used for bold text, for example in
-     * {@linkplain #isHeaderCell() header cells}.
-     * </p>
-     *
-     * @param fontBold
-     * The {@linkplain PDFont font} to use for bold text
-     */
-    public void setFontBold(final PDFont fontBold)
-    {
-        this.fontBold = fontBold;
-    }
+	/**
+	 * <p>
+	 * Sets the {@linkplain PDFont font} used for bold text, for example in
+	 * {@linkplain #isHeaderCell() header cells}.
+	 * </p>
+	 *
+	 * @param fontBold
+	 *            The {@linkplain PDFont font} to use for bold text
+	 */
+	public void setFontBold(final PDFont fontBold) {
+		this.fontBold = fontBold;
+	}
 
 	public boolean isColspanCell() {
 		return isColspanCell;
@@ -678,159 +676,142 @@ public class Cell<T extends PDPage> {
 
 	public void setColspanCell(boolean isColspanCell) {
 		this.isColspanCell = isColspanCell;
-    }
+	}
 
-    public void setAlign(HorizontalAlignment align)
-    {
-        this.align = align;
-    }
+	public void setAlign(HorizontalAlignment align) {
+		this.align = align;
+	}
 
-    public void setValign(VerticalAlignment valign)
-    {
-        this.valign = valign;
-    }
+	public void setValign(VerticalAlignment valign) {
+		this.valign = valign;
+	}
 
-    /**
-     * <p>
-     * Copies the style of an existing cell to this cell
-     * </p>
-     *
-     * @param sourceCell
-     */
-    public void copyCellStyle(Cell sourceCell)
-    {
-        Boolean leftBorder = this.leftBorderStyle == null;
-        setBorderStyle(sourceCell.getTopBorder());
-        if (leftBorder) {
-            this.leftBorderStyle = null;//if left border wasn't set, don't set it now
-        }
-        this.font = sourceCell.getFont();//otherwise paragraph gets invalidated
-        this.fontBold = sourceCell.getFontBold();
-        setFillColor(sourceCell.getFillColor());
-        setTextColor(sourceCell.getTextColor());
-        setAlign(sourceCell.getAlign());
-        setValign(sourceCell.getValign());
-    }
+	/**
+	 * <p>
+	 * Copies the style of an existing cell to this cell
+	 * </p>
+	 *
+	 * @param sourceCell
+	 */
+	public void copyCellStyle(Cell sourceCell) {
+		Boolean leftBorder = this.leftBorderStyle == null;
+		setBorderStyle(sourceCell.getTopBorder());
+		if (leftBorder) {
+			this.leftBorderStyle = null;// if left border wasn't set, don't set
+										// it now
+		}
+		this.font = sourceCell.getFont();// otherwise paragraph gets invalidated
+		this.fontBold = sourceCell.getFontBold();
+		setFillColor(sourceCell.getFillColor());
+		setTextColor(sourceCell.getTextColor());
+		setAlign(sourceCell.getAlign());
+		setValign(sourceCell.getValign());
+	}
 
-    public Cell<T> withBorder(LineStyle style)
-    {
-        setBorderStyle(style);
-        return this;
-    }
+	public Cell withBorder(LineStyle style) {
+		setBorderStyle(style);
+		return this;
+	}
 
-    public Cell<T> withFont(PDFont font)
-    {
-        this.font = font;
-        return this;
-    }
+	public Cell withFont(PDFont font) {
+		this.font = font;
+		return this;
+	}
 
-    public Cell<T> withFontBold(PDFont font)
-    {
-        this.fontBold = font;
-        return this;
-    }
+	public Cell withFontBold(PDFont font) {
+		this.fontBold = font;
+		return this;
+	}
 
-    public Cell<T> withAlign(HorizontalAlignment align)
-    {
-        setAlign(align);
-        return this;
-    }
+	public Cell withAlign(HorizontalAlignment align) {
+		setAlign(align);
+		return this;
+	}
 
-    public Cell<T> withValign(VerticalAlignment align)
-    {
-        setValign(align);
-        return this;
-    }
+	public Cell withValign(VerticalAlignment align) {
+		setValign(align);
+		return this;
+	}
 
-    public Cell<T> withFillColor(Color c)
-    {
-        setFillColor(c);
-        return this;
-    }
+	public Cell withFillColor(Color c) {
+		setFillColor(c);
+		return this;
+	}
 
-    public Cell<T> withTextColor(Color c)
-    {
-        setTextColor(c);
-        return this;
-    }
+	public Cell withTextColor(Color c) {
+		setTextColor(c);
+		return this;
+	}
 
-    public Cell<T> withFontSize(int size)
-    {
-        setFontSize(size);
-        return this;
-    }
-    /**
-     * Apply all the layouters of the table to the cell
-     */
-    public void layout()
-    {
-        for (DefaultCellLayouter l : row.getTable().getLayouters()) {
-            l.layout(this);
-        }
-    }
-    /**
-     * <p>
-     * Compares the style of a cell with another cell
-     * </p>
-     *
-     * @param sourceCell
-     * @return
-     */
-    public Boolean hasSameStyle(Cell sourceCell)
-    {
-        if (!sourceCell.getTopBorder().equals(getTopBorder())) {
-            return false;
-        }
-        if (!sourceCell.getFont().equals(getFont())) {
-            return false;
-        }
-        if (!sourceCell.getFontBold().equals(getFontBold())) {
-            return false;
-        }
-        if (!sourceCell.getFillColor().equals(getFillColor())) {
-            return false;
-        }
-        if (!sourceCell.getTextColor().equals(getTextColor())) {
-            return false;
-        }
-        if (!sourceCell.getAlign().equals(getAlign())) {
-            return false;
-        }
-        if (!sourceCell.getValign().equals(getValign())) {
-            return false;
-        }
-        return true;
-    }
+	public Cell withFontSize(int size) {
+		setFontSize(size);
+		return this;
+	}
 
+	/**
+	 * Apply all the layouters of the table to the cell
+	 */
+	public void layout() {
+		for (DefaultCellLayouter l : row.getTable().getLayouters()) {
+			l.layout(this);
+		}
+	}
 
-    public void setWidth(float width)
-    {
-        this.width = width;
-    }
+	/**
+	 * <p>
+	 * Compares the style of a cell with another cell
+	 * </p>
+	 *
+	 * @param sourceCell
+	 * @return
+	 */
+	public Boolean hasSameStyle(Cell sourceCell) {
+		if (!sourceCell.getTopBorder().equals(getTopBorder())) {
+			return false;
+		}
+		if (!sourceCell.getFont().equals(getFont())) {
+			return false;
+		}
+		if (!sourceCell.getFontBold().equals(getFontBold())) {
+			return false;
+		}
+		if (!sourceCell.getFillColor().equals(getFillColor())) {
+			return false;
+		}
+		if (!sourceCell.getTextColor().equals(getTextColor())) {
+			return false;
+		}
+		if (!sourceCell.getAlign().equals(getAlign())) {
+			return false;
+		}
+		if (!sourceCell.getValign().equals(getValign())) {
+			return false;
+		}
+		return true;
+	}
 
-    public float getWidthPct()
-    {
-        return widthPct;
-    }
+	public void setWidth(float width) {
+		this.width = width;
+	}
 
-    public void setWidthPct(float widthPct)
-    {
-        this.widthPct = widthPct;
-    }
+	public float getWidthPct() {
+		return widthPct;
+	}
 
-    public int getColumnIndex()
-    {
-        return row.getCells().indexOf(this);
-    }
+	public void setWidthPct(float widthPct) {
+		this.widthPct = widthPct;
+	}
 
-    public int getRowIndex()
-    {
-        return row.getRowIndex();
-    }
+	public int getColumnIndex() {
+		return row.getCells().indexOf(this);
+	}
 
-    public Row<T> getRow()
-    {
-        return row;
-    }
+	public int getRowIndex() {
+		return row.getRowIndex();
+	}
+
+	public Row getRow() {
+		return row;
+	}
 
 }
