@@ -723,12 +723,12 @@ public class Cell {
 		return this;
 	}
 
-	public Cell withAlign(HorizontalAlignment align) {
+	public Cell withHorizontalAlignment(HorizontalAlignment align) {
 		setAlign(align);
 		return this;
 	}
 
-	public Cell withValign(VerticalAlignment align) {
+	public Cell withVerticalAlignment(VerticalAlignment align) {
 		setValign(align);
 		return this;
 	}

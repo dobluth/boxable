@@ -11,21 +11,12 @@ import java.util.logging.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.io.Files;
 
-import be.quodlibet.boxable.layout.DefaultCellLayouter;
-import be.quodlibet.boxable.layout.MatrixCellLayouter;
-import be.quodlibet.boxable.layout.VerticalZebraCellLayouter;
-import be.quodlibet.boxable.layout.ZebraCellLayouter;
-import be.quodlibet.boxable.layout.style.DefaultStyle;
-import be.quodlibet.boxable.layout.style.DefaultStyle.Styles;
-import be.quodlibet.boxable.line.LineStyle;
 import be.quodlibet.boxable.page.DefaultPageProvider;
 
 /**
@@ -33,12 +24,8 @@ import be.quodlibet.boxable.page.DefaultPageProvider;
  * @author Dries Horions <dries@quodlibet.be>
  */
 public class APITestv2_0 {
-	// Initialize Document
 
-	static PDDocument doc;
-
-	public APITestv2_0() {
-	}
+	private static PDDocument doc;
 
 	@BeforeClass
 	public static void setUpClass() {
@@ -53,18 +40,6 @@ public class APITestv2_0 {
 			Logger.getLogger(APITestv2_0.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-
-	@Before
-	public void setUp() {
-	}
-
-	@After
-	public void tearDown() {
-	}
-	/*
-	 * private static PDPage addNewPage() { PDPage page = new PDPage();
-	 * doc.addPage(page); return page; }
-	 */
 
 	private static void saveDocument(String fileName) throws IOException {
 		// Save the document
@@ -127,7 +102,6 @@ public class APITestv2_0 {
 			// https://pdfbox.apache.org/docs/2.0.0/javadocs/org/apache/pdfbox/pdmodel/PDPageContentStream.html#PDPageContentStream(org.apache.pdfbox.pdmodel.PDDocument,%20org.apache.pdfbox.pdmodel.PDPage,%20org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode,%20boolean,%20boolean)
 			Logger.getLogger(APITestv2_0.class.getName()).log(Level.SEVERE, null, ex);
 		}
-
 	}
 
 	@Test
@@ -162,7 +136,6 @@ public class APITestv2_0 {
 		} catch (IOException ex) {
 			Logger.getLogger(APITestv2_0.class.getName()).log(Level.SEVERE, null, ex);
 		}
-
 	}
 
 	@Test
@@ -195,66 +168,6 @@ public class APITestv2_0 {
 			// https://pdfbox.apache.org/docs/2.0.0/javadocs/org/apache/pdfbox/pdmodel/PDPageContentStream.html#PDPageContentStream(org.apache.pdfbox.pdmodel.PDDocument,%20org.apache.pdfbox.pdmodel.PDPage,%20org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode,%20boolean,%20boolean)
 			Logger.getLogger(APITestv2_0.class.getName()).log(Level.SEVERE, null, ex);
 		}
-
 	}
 
-	@Test
-	public void apiv2_0Test4() {
-		Table table = new Table();
-		// The Header Row, width % is mandatory for this row
-		Row headerRow = table.createRow();
-		headerRow.createCell(100, "Test 4 - Theming");
-		table.addHeaderRow(headerRow);
-		// No widths are passed for the columns, so they should be auto
-		// calcilated
-		headerRow = table.createRow(new ArrayList<>(Arrays.asList("XvsY", "A", "B", "C", "D", "E", "F")), Row.HEADER);
-
-		// Non header rows will inherit their width from the last header row.
-		// Any arbitrary collection can be used, the String representation will
-		// be used.
-		for (int i = 1; i <= 6; i++) {
-			table.createRow(
-					new ArrayList<>(Arrays.asList("" + i, "A" + i, "B" + i, "C" + i, "D" + i, "E" + i, "F" + i)));
-		}
-
-		// Assign table to pageProvider
-		DefaultPageProvider provider = new DefaultPageProvider(doc, PDRectangle.A4);
-		provider.nextPage();
-
-		try {
-			// Draw table once with default Style
-			table.getRows().get(0).getCells().get(0).setText("Test 4 -  Default Style");
-			table.addLayouter(new DefaultCellLayouter(Styles.DEFAULT));
-			table.draw(provider);
-			// Green Style with Zebra Layouter
-			table.getRows().get(0).getCells().get(0).setText("Test 4 -  Green Style with Zebra Layouter");
-			table.clearLayouters().addLayouter(new DefaultCellLayouter(Styles.GREEN))
-					.addLayouter(new ZebraCellLayouter(Styles.GREEN)).draw(provider);
-
-			// Candy Style with Vertical Zebra Layouter
-			table.getRows().get(0).getCells().get(0).setText("Test 4 -  Candy Style with Vertical Zebra Layouter");
-			table.clearLayouters().addLayouter(new DefaultCellLayouter(Styles.CANDY))
-					.addLayouter(new VerticalZebraCellLayouter(Styles.CANDY)).draw(provider);
-
-			// Default Style with Zebra Layouter and Matrix Layouter
-			table.getRows().get(0).getCells().get(0)
-					.setText("Test 4 -  Default Style with Zebra Layouter and Matrix Layouter and centered headers");
-			table.clearLayouters().addLayouter(new DefaultCellLayouter(Styles.DEFAULT))
-					.addLayouter(new ZebraCellLayouter(Styles.DEFAULT))
-					.addLayouter(new MatrixCellLayouter(Styles.DEFAULT)).draw(provider);
-
-			// Custom style
-			table.pageBreak();
-			table.getRows().get(0).getCells().get(0).setText("Test 4 -  Custom Style");
-			DefaultStyle customStyle = new DefaultStyle().withBorder(new LineStyle(Color.ORANGE, (float) 0.5))
-					.withFont(PDType1Font.COURIER).withAlignAccent2(HorizontalAlignment.CENTER);
-			table.clearLayouters().addLayouter(new DefaultCellLayouter(customStyle)).draw();
-
-		} catch (IOException ex) {
-			// Writing to a pdf page can always return a IOException because of
-			// https://pdfbox.apache.org/docs/2.0.0/javadocs/org/apache/pdfbox/pdmodel/PDPageContentStream.html#PDPageContentStream(org.apache.pdfbox.pdmodel.PDDocument,%20org.apache.pdfbox.pdmodel.PDPage,%20org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode,%20boolean,%20boolean)
-			Logger.getLogger(APITestv2_0.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-	}
 }

@@ -1,31 +1,32 @@
 package be.quodlibet.boxable.layout;
 
 import be.quodlibet.boxable.Cell;
-import be.quodlibet.boxable.layout.style.DefaultStyle;
+import be.quodlibet.boxable.layout.style.Style;
 
 /**
  *
  * @author Dries Horions <dries@quodlibet.be>
  */
-public class VerticalZebraCellLayouter extends DefaultCellLayouter {
+public class VerticalZebraCellLayouter implements CellLayouter {
 
-	public VerticalZebraCellLayouter(DefaultStyle style) {
-		super(style);
-	}
+	private final Style oddStyle;
 
-	public VerticalZebraCellLayouter(DefaultStyle.Styles s) {
-		super(s);
+	private final Style evenStyle;
+
+	public VerticalZebraCellLayouter(final Style oddStyle, final Style evenStyle) {
+		this.oddStyle = oddStyle;
+		this.evenStyle = evenStyle;
 	}
 
 	@Override
 	public void layout(Cell cell) {
 		if (!cell.isHeaderCell()) {
 			if (cell.getColumnIndex() % 2 == 0) {
-				cell.withFillColor(style.fillcolorAccent5).withTextColor(style.textcolorAccent5)
-						.withAlign(style.alignAccent5).withValign(style.valignAccent5);
+				cell.withFillColor(evenStyle.getFillColor()).withTextColor(evenStyle.getTextColor())
+						.withHorizontalAlignment(evenStyle.getHorizontalAlignment()).withVerticalAlignment(evenStyle.getVerticalAlignment());
 			} else {
-				cell.withFillColor(style.fillcolorAccent6).withTextColor(style.textcolorAccent6)
-						.withAlign(style.alignAccent6).withValign(style.valignAccent6);
+				cell.withFillColor(oddStyle.getFillColor()).withTextColor(oddStyle.getTextColor())
+						.withHorizontalAlignment(oddStyle.getHorizontalAlignment()).withVerticalAlignment(oddStyle.getVerticalAlignment());
 			}
 		}
 	}

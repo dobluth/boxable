@@ -1,38 +1,37 @@
 package be.quodlibet.boxable.layout;
 
 import be.quodlibet.boxable.Cell;
-import be.quodlibet.boxable.layout.style.DefaultStyle;
+import be.quodlibet.boxable.layout.style.Style;
 
 /**
  *
  * @author Dries Horions <dries@quodlibet.be>
  */
-public class DefaultCellLayouter extends AbstractCellLayouter {
+public class DefaultCellLayouter implements CellLayouter {
 
-	public DefaultCellLayouter(DefaultStyle style) {
-		this.style = style;
-	}
+	private final Style commonStyle;
 
-	public DefaultCellLayouter(DefaultStyle.Styles s) {
-		style = new DefaultStyle(s);
+	private final Style headerStyle;
+
+	private final Style dataStyle;
+
+	public DefaultCellLayouter(final Style commonStyle, final Style headerStyle, final Style dataStyle) {
+		this.commonStyle = commonStyle;
+		this.headerStyle = headerStyle;
+		this.dataStyle = dataStyle;
 	}
 
 	@Override
-	public void layout(Cell cell) {
-		cell.withBorder(style.border).withFont(style.font).withFontBold(style.font).withFontSize(style.fontsize);
+	public void layout(final Cell cell) {
+		cell.withBorder(commonStyle.getBorder()).withFont(commonStyle.getFont()).withFontBold(commonStyle.getFontBold())
+				.withFontSize(commonStyle.getFontSize());
 
 		if (cell.isHeaderCell()) {
-			// All header cells accept the last one use accentcolor1
-			if (cell.getRow().equals(cell.getRow().getTable().getHeader())) {
-				cell.withFillColor(style.fillcolorAccent2).withTextColor(style.textcolorAccent2)
-						.withAlign(style.alignAccent2);
-			} else {
-				cell.withFillColor(style.fillcolorAccent1).withTextColor(style.textcolorAccent1)
-						.withAlign(style.alignAccent1);
-			}
+			cell.withFillColor(headerStyle.getFillColor()).withTextColor(headerStyle.getTextColor())
+					.withHorizontalAlignment(headerStyle.getHorizontalAlignment());
 		} else {
-			cell.withFillColor(style.fillcolorDefault).withTextColor(style.textcolorDefault)
-					.withAlign(style.alignDefault);
+			cell.withFillColor(dataStyle.getFillColor()).withTextColor(dataStyle.getTextColor())
+					.withHorizontalAlignment(dataStyle.getHorizontalAlignment());
 		}
 	}
 
