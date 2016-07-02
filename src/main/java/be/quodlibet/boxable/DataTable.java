@@ -1,4 +1,4 @@
-package be.quodlibet.boxable.datatable;
+package be.quodlibet.boxable;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import be.quodlibet.boxable.page.DefaultPageProvider;
 import be.quodlibet.boxable.utils.FontUtils;
 
 /**
- * Write CSV documents directly to PDF Tables
+ * Create PDF Tables from structured data
  *
  * @author Dries Horions <dries@quodlibet.be>
  */
@@ -37,9 +37,8 @@ public class DataTable {
 
 	/**
 	 * <p>
-	 * Create a CSVTable object to be able to add CSV document to a Table. A
-	 * page needs to be passed to the constructor so the Template Cells can be
-	 * created.
+	 * Create a DataTable object to be able to add data to a Table. A page needs
+	 * to be passed to the constructor so the Template Cells can be created.
 	 * </p>
 	 *
 	 * @param table
