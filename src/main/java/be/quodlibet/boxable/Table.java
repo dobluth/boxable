@@ -25,7 +25,7 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPa
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.util.Matrix;
 
-import be.quodlibet.boxable.layout.cell.DefaultCellLayouter;
+import be.quodlibet.boxable.layout.TableLayout;
 import be.quodlibet.boxable.line.LineStyle;
 import be.quodlibet.boxable.page.PageProvider;
 import be.quodlibet.boxable.text.Token;
@@ -53,7 +53,6 @@ public class Table {
 	private boolean removeTopBorders = false;
 
 	private PageProvider pageProvider;
-	private List<DefaultCellLayouter> layouters;
 
 	private boolean drawDebug;
 
@@ -65,7 +64,7 @@ public class Table {
 	private float margin = 10;
 	private boolean drawLines = true;
 	private boolean drawContent = true;
-	
+
 	public Table() {
 	}
 
@@ -101,27 +100,6 @@ public class Table {
 
 		// Fonts needs to be loaded before page creation
 		this.currentPage = pageProvider.nextPage();
-	}
-
-	public Table addLayouter(DefaultCellLayouter l) {
-		getLayouters().add(l);
-		return this;
-	}
-
-	public Table clearLayouters() {
-		getLayouters().clear();
-		return this;
-	}
-
-	public List<DefaultCellLayouter> getLayouters() {
-		if (layouters == null) {
-			layouters = new ArrayList<>();
-		}
-		return layouters;
-	}
-
-	public void setLayouters(List<DefaultCellLayouter> layouters) {
-		this.layouters = layouters;
 	}
 
 	public void setPage(PageProvider provider) {
@@ -225,12 +203,12 @@ public class Table {
 		return row;
 	}
 
-	private void initColumnWidths() {
+	private void initColumnWidths(final TableLayout tableLayout) {
 		Row lastHeaderRow = this.header.get(this.header.size() - 1);
 		Boolean hasWidthPct = false;
 		List<Cell> cells = lastHeaderRow.getCells();
 		for (Cell c : cells) {
-			c.layout();
+			tableLayout.layout(c);
 			if (c.getWidth() > 0 || c.getWidthPct() > 0) {
 				hasWidthPct = true;
 			}
@@ -260,16 +238,16 @@ public class Table {
 			}
 		}
 		for (Row r : this.getRows()) {
-			initRowColumnWidths(r, lastHeaderRow);
+			initRowColumnWidths(tableLayout, r, lastHeaderRow);
 		}
 	}
 
-	private void initRowColumnWidths(Row r, Row lastHeaderRow) {
+	private void initRowColumnWidths(final TableLayout tableLayout, final Row r, final Row lastHeaderRow) {
 		Boolean hasWidthPct = false;
 		List<Cell> cells = r.getCells();
-		for (Cell c : cells) {
-			c.layout();
-			if (c.getWidth() > 0 || c.getWidthPct() > 0) {
+		for (final Cell cell : cells) {
+			tableLayout.layout(cell);
+			if (cell.getWidth() > 0 || cell.getWidthPct() > 0) {
 				hasWidthPct = true;
 			}
 		}
@@ -292,10 +270,10 @@ public class Table {
 	 * @return
 	 * @throws IOException
 	 */
-	public float draw(float yStartPosition, PageProvider provider) throws IOException {
+	public float draw(final TableLayout tableLayout, float yStartPosition, PageProvider provider) throws IOException {
 		this.yStart = yStartPosition;
 		this.setPage(provider);
-		return draw();
+		return draw(tableLayout);
 	}
 
 	/**
@@ -305,12 +283,12 @@ public class Table {
 	 * @return
 	 * @throws IOException
 	 */
-	public float draw(PageProvider provider) throws IOException {
+	public float draw(final TableLayout tableLayout, PageProvider provider) throws IOException {
 		this.setPage(provider);
-		return draw();
+		return draw(tableLayout);
 	}
 
-	public float draw() throws IOException {
+	public float draw(final TableLayout tableLayout) throws IOException {
 		// if certain settings are not provided, default them
 		if (yStartNewPage == 0) {
 			yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * margin);
@@ -327,7 +305,7 @@ public class Table {
 
 		// If the last header line doesn't have widths assigned, calculate the
 		// width based on the content.
-		initColumnWidths();
+		initColumnWidths(tableLayout);
 
 		ensureStreamIsOpen();
 

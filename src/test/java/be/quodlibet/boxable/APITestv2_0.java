@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.google.common.io.Files;
 
+import be.quodlibet.boxable.layout.TableLayout;
 import be.quodlibet.boxable.page.DefaultPageProvider;
 
 /**
@@ -78,11 +79,12 @@ public class APITestv2_0 {
 						.withTextColor(Color.WHITE))));
 		// Assign table to pageProvider
 		DefaultPageProvider provider = new DefaultPageProvider(doc, PDRectangle.A4);
+		final TableLayout tableLayout = new TableLayout();
 		try {
-			table.draw(provider);
+			table.draw(tableLayout, provider);
 			// Draw it a second time
 			table.getRows().get(0).getCells().get(0).setText("Test 1 -  Same table second time on same page");
-			table.draw(provider);
+			table.draw(tableLayout, provider);
 			// Use the same table, but with different title, of a different size
 			// page (A4 landscape)
 			// provider = new DefaultPageProvider(doc, new
@@ -93,9 +95,9 @@ public class APITestv2_0 {
 			table.getRows().get(0).getCells().get(0)
 					.setText("Test 1 -  Same table third time, on a different size page");
 			// Draw it a third time on the next page
-			float bottom = table.draw(provider);
+			float bottom = table.draw(tableLayout, provider);
 			// draw ith a fourth time on the next page, but a little lower
-			table.draw(bottom - 100, provider);
+			table.draw(tableLayout, bottom - 100, provider);
 
 		} catch (IOException ex) {
 			// Writing to a pdf page can always return a IOException because of
@@ -132,7 +134,7 @@ public class APITestv2_0 {
 		// Writing to a pdf page can always return a IOException because of
 		// https://pdfbox.apache.org/docs/2.0.0/javadocs/org/apache/pdfbox/pdmodel/PDPageContentStream.html#PDPageContentStream(org.apache.pdfbox.pdmodel.PDDocument,%20org.apache.pdfbox.pdmodel.PDPage,%20org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode,%20boolean,%20boolean)
 		try {
-			table.draw(provider);
+			table.draw(new TableLayout(), provider);
 		} catch (IOException ex) {
 			Logger.getLogger(APITestv2_0.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -162,7 +164,7 @@ public class APITestv2_0 {
 		DefaultPageProvider provider = new DefaultPageProvider(doc, PDRectangle.A4);
 		provider.nextPage();
 		try {
-			table.draw(provider);
+			table.draw(new TableLayout(), provider);
 		} catch (IOException ex) {
 			// Writing to a pdf page can always return a IOException because of
 			// https://pdfbox.apache.org/docs/2.0.0/javadocs/org/apache/pdfbox/pdmodel/PDPageContentStream.html#PDPageContentStream(org.apache.pdfbox.pdmodel.PDDocument,%20org.apache.pdfbox.pdmodel.PDPage,%20org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode,%20boolean,%20boolean)

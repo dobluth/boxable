@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.google.common.io.Files;
 
 import be.quodlibet.boxable.datatable.DataTable;
+import be.quodlibet.boxable.layout.TableLayout;
 import be.quodlibet.boxable.page.DefaultPageProvider;
 
 /**
@@ -50,7 +51,7 @@ public class DataTableTest {
 				new DefaultPageProvider(doc, page.getMediaBox()));
 		DataTable t = new DataTable(dataTable, page);
 		t.addListToTable(data, DataTable.HASHEADER);
-		dataTable.draw();
+		dataTable.draw(new TableLayout());
 		File file = new File("target/ListExampleLandscape.pdf");
 		System.out.println("Sample file saved at : " + file.getAbsolutePath());
 		Files.createParentDirs(file);

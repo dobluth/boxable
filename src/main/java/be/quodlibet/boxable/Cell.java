@@ -10,7 +10,6 @@ import java.io.IOException;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
-import be.quodlibet.boxable.layout.cell.DefaultCellLayouter;
 import be.quodlibet.boxable.line.LineStyle;
 import be.quodlibet.boxable.text.WrappingFunction;
 
@@ -746,15 +745,6 @@ public class Cell {
 	public Cell withFontSize(int size) {
 		setFontSize(size);
 		return this;
-	}
-
-	/**
-	 * Apply all the layouters of the table to the cell
-	 */
-	public void layout() {
-		for (DefaultCellLayouter l : row.getTable().getLayouters()) {
-			l.layout(this);
-		}
 	}
 
 	/**
