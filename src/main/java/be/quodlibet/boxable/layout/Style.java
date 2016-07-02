@@ -1,4 +1,4 @@
-package be.quodlibet.boxable.layout.style;
+package be.quodlibet.boxable.layout;
 
 import java.awt.Color;
 

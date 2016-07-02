@@ -1,7 +1,7 @@
-package be.quodlibet.boxable.layout;
+package be.quodlibet.boxable.layout.cell;
 
 import be.quodlibet.boxable.Cell;
-import be.quodlibet.boxable.layout.style.Style;
+import be.quodlibet.boxable.layout.Style;
 
 /**
  *

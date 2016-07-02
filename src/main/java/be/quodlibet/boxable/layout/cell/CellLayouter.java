@@ -1,4 +1,4 @@
-package be.quodlibet.boxable.layout;
+package be.quodlibet.boxable.layout.cell;
 
 import be.quodlibet.boxable.Cell;
 

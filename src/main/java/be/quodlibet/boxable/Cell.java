@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
-import be.quodlibet.boxable.layout.DefaultCellLayouter;
+import be.quodlibet.boxable.layout.cell.DefaultCellLayouter;
 import be.quodlibet.boxable.line.LineStyle;
 import be.quodlibet.boxable.text.WrappingFunction;
 

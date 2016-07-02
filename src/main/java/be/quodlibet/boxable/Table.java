@@ -25,7 +25,7 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPa
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.util.Matrix;
 
-import be.quodlibet.boxable.layout.DefaultCellLayouter;
+import be.quodlibet.boxable.layout.cell.DefaultCellLayouter;
 import be.quodlibet.boxable.line.LineStyle;
 import be.quodlibet.boxable.page.PageProvider;
 import be.quodlibet.boxable.text.Token;
