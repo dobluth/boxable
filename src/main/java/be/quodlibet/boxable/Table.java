@@ -65,9 +65,42 @@ public class Table {
 	private float margin = 10;
 	private boolean drawLines = true;
 	private boolean drawContent = true;
-
+	
 	public Table() {
+	}
 
+	public Table(float yStart, float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width,
+			float margin, PDDocument document, PDPage currentPage, boolean drawLines, boolean drawContent,
+			PageProvider pageProvider) throws IOException {
+		this.pageTopMargin = pageTopMargin;
+		this.document = document;
+		this.drawLines = drawLines;
+		this.drawContent = drawContent;
+		// Initialize table
+		this.yStartNewPage = yStartNewPage;
+		this.margin = margin;
+		this.width = width;
+		this.yStart = yStart;
+		this.pageBottomMargin = pageBottomMargin;
+		this.currentPage = currentPage;
+		this.pageProvider = pageProvider;
+	}
+
+	public Table(float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width, float margin,
+			PDDocument document, boolean drawLines, boolean drawContent, PageProvider pageProvider) throws IOException {
+		this.pageTopMargin = pageTopMargin;
+		this.document = document;
+		this.drawLines = drawLines;
+		this.drawContent = drawContent;
+		// Initialize table
+		this.yStartNewPage = yStartNewPage;
+		this.margin = margin;
+		this.width = width;
+		this.pageProvider = pageProvider;
+		this.pageBottomMargin = pageBottomMargin;
+
+		// Fonts needs to be loaded before page creation
+		this.currentPage = pageProvider.nextPage();
 	}
 
 	public Table addLayouter(DefaultCellLayouter l) {
@@ -95,61 +128,6 @@ public class Table {
 		this.pageProvider = provider;
 		this.currentPage = pageProvider.getCurrentPage();
 		this.document = pageProvider.getDocument();
-	}
-
-	/**
-	 * @deprecated Use one of the constructors that pass a {@link PageProvider}
-	 */
-	@Deprecated
-	public Table(float yStart, float yStartNewPage, float pageBottomMargin, float width, float margin,
-			PDDocument document, PDPage currentPage, boolean drawLines, boolean drawContent) throws IOException {
-		this(yStart, yStartNewPage, 0, pageBottomMargin, width, margin, document, currentPage, drawLines, drawContent,
-				null);
-	}
-
-	/**
-	 * @deprecated Use one of the constructors that pass a {@link PageProvider}
-	 */
-	@Deprecated
-	public Table(float yStartNewPage, float pageBottomMargin, float width, float margin, PDDocument document,
-			boolean drawLines, boolean drawContent) throws IOException {
-		this(yStartNewPage, 0, pageBottomMargin, width, margin, document, drawLines, drawContent, null);
-	}
-
-	@Deprecated
-	public Table(float yStart, float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width,
-			float margin, PDDocument document, PDPage currentPage, boolean drawLines, boolean drawContent,
-			PageProvider pageProvider) throws IOException {
-		this.pageTopMargin = pageTopMargin;
-		this.document = document;
-		this.drawLines = drawLines;
-		this.drawContent = drawContent;
-		// Initialize table
-		this.yStartNewPage = yStartNewPage;
-		this.margin = margin;
-		this.width = width;
-		this.yStart = yStart;
-		this.pageBottomMargin = pageBottomMargin;
-		this.currentPage = currentPage;
-		this.pageProvider = pageProvider;
-	}
-
-	@Deprecated
-	public Table(float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width, float margin,
-			PDDocument document, boolean drawLines, boolean drawContent, PageProvider pageProvider) throws IOException {
-		this.pageTopMargin = pageTopMargin;
-		this.document = document;
-		this.drawLines = drawLines;
-		this.drawContent = drawContent;
-		// Initialize table
-		this.yStartNewPage = yStartNewPage;
-		this.margin = margin;
-		this.width = width;
-		this.pageProvider = pageProvider;
-		this.pageBottomMargin = pageBottomMargin;
-
-		// Fonts needs to be loaded before page creation
-		this.currentPage = pageProvider.nextPage();
 	}
 
 	protected PDType0Font loadFont(String fontPath) throws IOException {

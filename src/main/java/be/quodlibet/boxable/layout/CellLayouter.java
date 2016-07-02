@@ -19,7 +19,7 @@ import be.quodlibet.boxable.Cell;
  * effect.
  * </p>
  * 
- * @author Markus Kühne <kuehne@szue.de>
+ * @author dobluth
  *
  */
 public interface CellLayouter {

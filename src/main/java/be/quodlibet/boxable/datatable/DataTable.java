@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
@@ -19,6 +16,7 @@ import be.quodlibet.boxable.Row;
 import be.quodlibet.boxable.Table;
 import be.quodlibet.boxable.VerticalAlignment;
 import be.quodlibet.boxable.line.LineStyle;
+import be.quodlibet.boxable.page.DefaultPageProvider;
 import be.quodlibet.boxable.utils.FontUtils;
 
 /**
@@ -56,7 +54,8 @@ public class DataTable {
 		dpage.setMediaBox(page.getMediaBox());
 		dpage.setRotation(page.getRotation());
 		ddoc.addPage(dpage);
-		Table dummyTable = new Table(10f, 10f, 10f, table.getWidth(), 10f, ddoc, dpage, false, false);
+		Table dummyTable = new Table(10f, 10f, 10f, table.getWidth(), 10f, ddoc, false, false,
+				new DefaultPageProvider(ddoc, page.getMediaBox()));
 		Row dr = dummyTable.createRow(0f);
 		headerCellTemplate = dr.createCell(10f, "A", HorizontalAlignment.CENTER, VerticalAlignment.MIDDLE);
 		dataCellTemplateEven = dr.createCell(10f, "A", HorizontalAlignment.LEFT, VerticalAlignment.MIDDLE);
@@ -180,59 +179,18 @@ public class DataTable {
 	 * @param separator
 	 * @throws IOException
 	 */
-	public void addListToTable(List<List<?>> data, Boolean hasHeader) throws IOException {
-		char separator = ';';
-		if (data == null || data.isEmpty()) {
-			return;
-		}
-		String output = "";
-		// Convert Map of arbitrary objects to a csv String
-		for (List<?> inputList : data) {
-			for (Object v : inputList) {
-				String value = v.toString();
-				if (value.contains("" + separator)) {
-					// surround value with quotes if it contains the escape
-					// character
-					value = "\"" + value + "\"";
-				}
-				output += value + separator;
-			}
-			// remove the last separator
-			output = removeLastChar(output);
-			output += "\n";
-		}
-		addCsvToTable(output, hasHeader, separator);
-	}
-
-	private static String removeLastChar(String str) {
-		return str.substring(0, str.length() - 1);
-	}
-
-	/**
-	 * <p>
-	 * Add a String representing a CSV document to the Table
-	 * </p>
-	 *
-	 * @param data
-	 * @param hasHeader
-	 * @param separator
-	 * @throws IOException
-	 */
-	public void addCsvToTable(String data, Boolean hasHeader, char separator) throws IOException {
-		Iterable<CSVRecord> records = CSVParser.parse(data, CSVFormat.EXCEL.withDelimiter(separator));
-		Boolean isHeader = hasHeader;
-		Boolean isFirst = true;
-		Boolean odd = true;
+	public void addListToTable(final List<List<?>> data, boolean hasHeader) throws IOException {
+		boolean isHeader = hasHeader;
+		boolean isFirst = true;
+		boolean odd = true;
 		Map<Integer, Float> colWidths = new HashMap<>();
 		int numcols = 0;
-		for (CSVRecord line : records) {
-
+		for (final List<?> row : data) {
 			if (isFirst) {
-
 				// calculate the width of the columns
 				float totalWidth = 0.0f;
-				for (int i = 0; i < line.size(); i++) {
-					String cellValue = line.get(i);
+				for (int i = 0; i < row.size(); i++) {
+					String cellValue = String.valueOf(row.get(i));
 					float textWidth = FontUtils.getStringWidth(headerCellTemplate.getFont(), " " + cellValue + " ",
 							headerCellTemplate.getFontSize());
 					totalWidth += textWidth;
@@ -245,8 +203,8 @@ public class DataTable {
 				float sizefactor = table.getWidth() / totalWidth;
 				for (int i = 0; i <= numcols; i++) {
 					String cellValue = "";
-					if (line.size() >= i) {
-						cellValue = line.get(i);
+					if (row.size() >= i) {
+						cellValue = String.valueOf(row.get(i));
 					}
 					float textWidth = FontUtils.getStringWidth(headerCellTemplate.getFont(), " " + cellValue + " ",
 							headerCellTemplate.getFontSize());
@@ -261,7 +219,7 @@ public class DataTable {
 				// Add Header Row
 				Row h = table.createRow(headerCellTemplate.getCellHeight());
 				for (int i = 0; i <= numcols; i++) {
-					String cellValue = line.get(i);
+					String cellValue = String.valueOf(row.get(i));
 					Cell c = h.createCell(colWidths.get(i), cellValue, headerCellTemplate.getAlign(),
 							headerCellTemplate.getValign());
 					// Apply style of header cell to this cell
@@ -285,8 +243,8 @@ public class DataTable {
 						template = lastColumnCellTemplate;
 					}
 					String cellValue = "";
-					if (line.size() >= i) {
-						cellValue = line.get(i);
+					if (row.size() >= i) {
+						cellValue = String.valueOf(row.get(i));
 					}
 					Cell c = r.createCell(colWidths.get(i), cellValue, template.getAlign(), template.getValign());
 					// Apply style of header cell to this cell

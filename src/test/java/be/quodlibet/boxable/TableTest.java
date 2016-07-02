@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import com.google.common.io.Files;
 
+import be.quodlibet.boxable.page.DefaultPageProvider;
 import be.quodlibet.boxable.utils.ImageUtils;
 
 public class TableTest {
@@ -41,7 +42,8 @@ public class TableTest {
 		boolean drawContent = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, page, true, drawContent);
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, true, drawContent,
+				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
 		Row headerRow = table.createRow(15f);
@@ -197,8 +199,8 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, page, drawLines,
-				drawContent);
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
 		Row headerRow = table.createRow(15f);
@@ -313,8 +315,8 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, page, drawLines,
-				drawContent);
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
 		Row row = table.createRow(15f);
@@ -393,8 +395,8 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, page, drawLines,
-				drawContent);
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create header row
 		Row headerRow = table.createRow(15f);
@@ -507,8 +509,8 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, page, drawLines,
-				drawContent);
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
 		Row row = table.createRow(15f);
