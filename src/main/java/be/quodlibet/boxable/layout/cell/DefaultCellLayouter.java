@@ -22,7 +22,7 @@ public class DefaultCellLayouter implements CellLayouter {
 	}
 
 	@Override
-	public void layout(final Cell cell) {
+	public void layoutCell(final Cell cell) {
 		cell.withBorder(commonStyle.getBorder()).withFont(commonStyle.getFont()).withFontBold(commonStyle.getFontBold())
 				.withFontSize(commonStyle.getFontSize());
 

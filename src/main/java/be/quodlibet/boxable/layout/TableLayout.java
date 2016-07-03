@@ -21,7 +21,7 @@ public class TableLayout {
 	
 	public void layout(final Cell cell) {
 		for (final CellLayouter layouter : cellLayouters) {
-			layouter.layout(cell);
+			layouter.layoutCell(cell);
 		}
 	}
 

@@ -33,5 +33,5 @@ public interface CellLayouter {
 	 * @param cell
 	 *            The {@linkplain Cell}
 	 */
-	public void layout(Cell cell);
+	public void layoutCell(Cell cell);
 }

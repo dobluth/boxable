@@ -19,7 +19,7 @@ public class ZebraCellLayouter implements CellLayouter {
 	}
 
 	@Override
-	public void layout(Cell cell) {
+	public void layoutCell(Cell cell) {
 		if (!cell.isHeaderCell()) {
 			if (cell.getRowIndex() % 2 == 0) {
 				cell.withFillColor(evenStyle.getFillColor()).withTextColor(evenStyle.getTextColor())

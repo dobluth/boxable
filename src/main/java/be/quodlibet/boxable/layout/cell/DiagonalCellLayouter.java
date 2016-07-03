@@ -16,7 +16,7 @@ public class DiagonalCellLayouter implements CellLayouter {
 	}
 
 	@Override
-	public void layout(Cell cell) {
+	public void layoutCell(Cell cell) {
 
 		int lastHeaderRowIndex = cell.getRow().getTable().getHeader().getRowIndex();
 		if ((cell.getRowIndex() - lastHeaderRowIndex) == cell.getColumnIndex()) {
