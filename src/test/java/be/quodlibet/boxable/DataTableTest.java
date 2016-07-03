@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import com.google.common.io.Files;
 
-import be.quodlibet.boxable.datatable.DataTable;
 import be.quodlibet.boxable.layout.TableLayout;
 import be.quodlibet.boxable.page.DefaultPageProvider;
 
