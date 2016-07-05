@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 
 import be.quodlibet.boxable.image.Image;
+import be.quodlibet.boxable.layout.TableLayout;
 
 public class Row {
 
@@ -241,8 +241,8 @@ public class Row {
 		return lastCellExtraWidth;
 	}
 
-	public float xEnd() {
-		return table.getMargin() + getWidth();
+	public float xEnd(final TableLayout tableLayout) {
+		return tableLayout.margin() + getWidth();
 	}
 
 	public boolean isHeaderRow() {

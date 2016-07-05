@@ -19,6 +19,12 @@ public class TableLayout {
 
 	private final List<CellLayouter> cellLayouters = new ArrayList<>();
 
+	private float pageTopMargin = 10;
+
+	private float pageBottomMargin = 10;
+
+	private float margin = 10;
+
 	private boolean drawLines = true;
 
 	private boolean drawContent = true;
@@ -40,6 +46,33 @@ public class TableLayout {
 
 	public TableLayout clearCellLayouters() {
 		cellLayouters.clear();
+		return this;
+	}
+
+	public float pageTopMargin() {
+		return pageTopMargin;
+	}
+
+	public TableLayout pageTopMargin(final float pageTopMargin) {
+		this.pageTopMargin = pageTopMargin;
+		return this;
+	}
+
+	public float pageBottomMargin() {
+		return pageBottomMargin;
+	}
+
+	public TableLayout pageBottomMargin(final float pageBottomMargin) {
+		this.pageBottomMargin = pageBottomMargin;
+		return this;
+	}
+
+	public float margin() {
+		return margin;
+	}
+
+	public TableLayout margin(final float margin) {
+		this.margin = margin;
 		return this;
 	}
 

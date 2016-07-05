@@ -57,37 +57,27 @@ public class Table {
 	// Defaults
 	PDFont font = PDType1Font.HELVETICA;
 	float fontSize = 6;
-	private float pageTopMargin = 10;
-	private float pageBottomMargin = 10;
-	private float margin = 10;
 
 	public Table() {
 	}
 
-	public Table(float yStart, float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width,
-			float margin, PDDocument document, PDPage currentPage, PageProvider pageProvider) throws IOException {
-		this.pageTopMargin = pageTopMargin;
+	public Table(float yStart, float yStartNewPage, float width, PDDocument document, PDPage currentPage,
+			PageProvider pageProvider) throws IOException {
 		this.document = document;
 		// Initialize table
 		this.yStartNewPage = yStartNewPage;
-		this.margin = margin;
 		this.width = width;
 		this.yStart = yStart;
-		this.pageBottomMargin = pageBottomMargin;
 		this.currentPage = currentPage;
 		this.pageProvider = pageProvider;
 	}
 
-	public Table(float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width, float margin,
-			PDDocument document, PageProvider pageProvider) throws IOException {
-		this.pageTopMargin = pageTopMargin;
+	public Table(float yStartNewPage, float width, PDDocument document, PageProvider pageProvider) throws IOException {
 		this.document = document;
 		// Initialize table
 		this.yStartNewPage = yStartNewPage;
-		this.margin = margin;
 		this.width = width;
 		this.pageProvider = pageProvider;
-		this.pageBottomMargin = pageBottomMargin;
 
 		// Fonts needs to be loaded before page creation
 		this.currentPage = pageProvider.nextPage();
@@ -119,9 +109,9 @@ public class Table {
 
 		ensureStreamIsOpen();
 
-		if (isEndOfPage(freeSpaceForPageBreak)) {
+		if (isEndOfPage(tableLayout, freeSpaceForPageBreak)) {
 			this.tableContentStream.close();
-			pageBreak();
+			pageBreak(tableLayout);
 		}
 
 		if (title == null) {
@@ -133,7 +123,7 @@ public class Table {
 			Paragraph paragraph = new Paragraph(title, font, fontSize, tableWidth, HorizontalAlignment.get(alignment),
 					wrappingFunction);
 			paragraph.setDrawDebug(tableLayout.drawDebug());
-			yStart = paragraph.write(articleTitle, margin, yStart);
+			yStart = paragraph.write(articleTitle, tableLayout.margin(), yStart);
 			if (paragraph.getHeight() < height) {
 				yStart -= (height - paragraph.getHeight());
 			}
@@ -142,7 +132,8 @@ public class Table {
 
 			if (tableLayout.drawDebug()) {
 				// margin
-				PDStreamUtils.rect(tableContentStream, margin, yStart, width, headerBottomMargin, Color.CYAN);
+				PDStreamUtils.rect(tableContentStream, tableLayout.margin(), yStart, width, headerBottomMargin,
+						Color.CYAN);
 			}
 		}
 
@@ -283,14 +274,14 @@ public class Table {
 	public float draw(final TableLayout tableLayout) throws IOException {
 		// if certain settings are not provided, default them
 		if (yStartNewPage == 0) {
-			yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * margin);
+			yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
 		}
 		if (yStart == 0) {
 			yStart = yStartNewPage;
 		}
 
 		// Since the page size can have changed, recalculate all column widths
-		this.width = pageProvider.getCurrentPage().getMediaBox().getWidth() - (2 * margin);
+		this.width = pageProvider.getCurrentPage().getMediaBox().getWidth() - (2 * tableLayout.margin());
 		for (Row r : rows) {
 			r.initWidths();
 		}
@@ -306,13 +297,13 @@ public class Table {
 				// check if header row height and first data row height can fit
 				// the page
 				// if not draw them on another side
-				if (isEndOfPage(getMinimumHeight())) {
-					pageBreak();
+				if (isEndOfPage(tableLayout, getMinimumHeight())) {
+					pageBreak(tableLayout);
 				}
 			}
 			drawRow(tableLayout, row);
 		}
-		endTable();
+		endTable(tableLayout);
 
 		return yStart;
 	}
@@ -335,13 +326,13 @@ public class Table {
 		// we want to remove the borders as often as possible
 		removeTopBorders = true;
 
-		if (isEndOfPage(row)) {
+		if (isEndOfPage(tableLayout, row)) {
 
 			// Draw line at bottom of table
-			endTable();
+			endTable(tableLayout);
 
 			// insert page break
-			pageBreak();
+			pageBreak(tableLayout);
 
 			// redraw all headers on each currentPage
 			if (!header.isEmpty()) {
@@ -377,7 +368,7 @@ public class Table {
 		}
 
 		if (tableLayout.drawLines()) {
-			drawVerticalLines(row);
+			drawVerticalLines(tableLayout, row);
 		}
 
 		if (tableLayout.drawContent()) {
@@ -422,7 +413,7 @@ public class Table {
 	private void drawCellContent(final TableLayout tableLayout, final Row row) throws IOException {
 
 		// position into first cell (horizontal)
-		float cursorX = margin;
+		float cursorX = tableLayout.margin();
 		float cursorY;
 
 		for (Cell cell : row.getCells()) {
@@ -783,11 +774,11 @@ public class Table {
 
 	}
 
-	private void drawVerticalLines(Row row) throws IOException {
-		float xStart = margin;
+	private void drawVerticalLines(final TableLayout tableLayout, final Row row) throws IOException {
+		float xStart = tableLayout.margin();
 
 		// give an extra margin to the latest cell
-		float xEnd = row.xEnd();
+		float xEnd = row.xEnd(tableLayout);
 
 		Iterator<Cell> cellIterator = row.getCells().iterator();
 		while (cellIterator.hasNext()) {
@@ -880,10 +871,10 @@ public class Table {
 		}
 	}
 
-	private void endTable() throws IOException {
+	private void endTable(final TableLayout tableLayout) throws IOException {
 		this.tableContentStream.close();
 		this.tableContentStream = null;
-		yStart -= margin;// add margin at bottom of table
+		yStart -= tableLayout.margin();// add margin at bottom of table
 	}
 
 	public PDPage getCurrentPage() {
@@ -891,9 +882,9 @@ public class Table {
 		return this.currentPage;
 	}
 
-	private boolean isEndOfPage(Row row) {
+	private boolean isEndOfPage(final TableLayout tableLayout, final Row row) {
 		float currentY = yStart - row.getHeight();
-		boolean isEndOfPage = currentY <= pageBottomMargin;
+		boolean isEndOfPage = currentY <= tableLayout.pageBottomMargin();
 		if (isEndOfPage) {
 			setTableIsBroken(true);
 		}
@@ -906,23 +897,23 @@ public class Table {
 		return isEndOfPage;
 	}
 
-	private boolean isEndOfPage(float freeSpaceForPageBreak) {
+	private boolean isEndOfPage(final TableLayout tableLayout, final float freeSpaceForPageBreak) {
 		float currentY = yStart - freeSpaceForPageBreak;
-		boolean isEndOfPage = currentY <= pageBottomMargin;
+		boolean isEndOfPage = currentY <= tableLayout.pageBottomMargin();
 		if (isEndOfPage) {
 			setTableIsBroken(true);
 		}
 		return isEndOfPage;
 	}
 
-	public void pageBreak() throws IOException {
+	public void pageBreak(final TableLayout tableLayout) throws IOException {
 		if (tableContentStream != null) {
 			tableContentStream.close();
 		}
 
 		this.currentPage = createNewPage();
-		yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * margin);
-		this.yStart = yStartNewPage - pageTopMargin;
+		yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
+		this.yStart = yStartNewPage - tableLayout.pageTopMargin();
 		this.tableContentStream = createPdPageContentStream();
 	}
 
@@ -1019,10 +1010,6 @@ public class Table {
 		return header.get(header.size() - 1);
 	}
 
-	public float getMargin() {
-		return margin;
-	}
-
 	protected void setYStart(float yStart) {
 		this.yStart = yStart;
 	}
@@ -1053,22 +1040,6 @@ public class Table {
 
 	public void setFontSize(float fontSize) {
 		this.fontSize = fontSize;
-	}
-
-	public float getPageTopMargin() {
-		return pageTopMargin;
-	}
-
-	public void setPageTopMargin(float pageTopMargin) {
-		this.pageTopMargin = pageTopMargin;
-	}
-
-	public float getPageBottomMargin() {
-		return pageBottomMargin;
-	}
-
-	public void setPageBottomMargin(float pageBottomMargin) {
-		this.pageBottomMargin = pageBottomMargin;
 	}
 
 }
