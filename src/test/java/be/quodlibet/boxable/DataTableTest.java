@@ -46,7 +46,7 @@ public class DataTableTest {
 					"Row " + i + " Col Three", "Row " + i + " Col Four", "Row " + i + " Col Five")));
 		}
 
-		Table dataTable = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, true, true,
+		Table dataTable = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc,
 				new DefaultPageProvider(doc, page.getMediaBox()));
 		DataTable t = new DataTable(dataTable, page);
 		t.addListToTable(data, DataTable.HASHEADER);

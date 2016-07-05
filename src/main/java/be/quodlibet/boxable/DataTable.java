@@ -53,7 +53,7 @@ public class DataTable {
 		dpage.setMediaBox(page.getMediaBox());
 		dpage.setRotation(page.getRotation());
 		ddoc.addPage(dpage);
-		Table dummyTable = new Table(10f, 10f, 10f, table.getWidth(), 10f, ddoc, false, false,
+		Table dummyTable = new Table(10f, 10f, 10f, table.getWidth(), 10f, ddoc,
 				new DefaultPageProvider(ddoc, page.getMediaBox()));
 		Row dr = dummyTable.createRow(0f);
 		headerCellTemplate = dr.createCell(10f, "A", HorizontalAlignment.CENTER, VerticalAlignment.MIDDLE);

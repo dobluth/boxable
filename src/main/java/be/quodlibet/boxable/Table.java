@@ -54,27 +54,20 @@ public class Table {
 
 	private PageProvider pageProvider;
 
-	private boolean drawDebug;
-
 	// Defaults
 	PDFont font = PDType1Font.HELVETICA;
 	float fontSize = 6;
 	private float pageTopMargin = 10;
 	private float pageBottomMargin = 10;
 	private float margin = 10;
-	private boolean drawLines = true;
-	private boolean drawContent = true;
 
 	public Table() {
 	}
 
 	public Table(float yStart, float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width,
-			float margin, PDDocument document, PDPage currentPage, boolean drawLines, boolean drawContent,
-			PageProvider pageProvider) throws IOException {
+			float margin, PDDocument document, PDPage currentPage, PageProvider pageProvider) throws IOException {
 		this.pageTopMargin = pageTopMargin;
 		this.document = document;
-		this.drawLines = drawLines;
-		this.drawContent = drawContent;
 		// Initialize table
 		this.yStartNewPage = yStartNewPage;
 		this.margin = margin;
@@ -86,11 +79,9 @@ public class Table {
 	}
 
 	public Table(float yStartNewPage, float pageTopMargin, float pageBottomMargin, float width, float margin,
-			PDDocument document, boolean drawLines, boolean drawContent, PageProvider pageProvider) throws IOException {
+			PDDocument document, PageProvider pageProvider) throws IOException {
 		this.pageTopMargin = pageTopMargin;
 		this.document = document;
-		this.drawLines = drawLines;
-		this.drawContent = drawContent;
 		// Initialize table
 		this.yStartNewPage = yStartNewPage;
 		this.margin = margin;
@@ -116,14 +107,15 @@ public class Table {
 		return document;
 	}
 
-	public void drawTitle(String title, PDFont font, int fontSize, float tableWidth, float height, String alignment,
-			float freeSpaceForPageBreak, boolean drawHeaderMargin) throws IOException {
-		drawTitle(title, font, fontSize, tableWidth, height, alignment, freeSpaceForPageBreak, null, drawHeaderMargin);
+	public void drawTitle(final TableLayout tableLayout, String title, PDFont font, int fontSize, float tableWidth,
+			float height, String alignment, float freeSpaceForPageBreak, boolean drawHeaderMargin) throws IOException {
+		drawTitle(tableLayout, title, font, fontSize, tableWidth, height, alignment, freeSpaceForPageBreak, null,
+				drawHeaderMargin);
 	}
 
-	public void drawTitle(String title, PDFont font, int fontSize, float tableWidth, float height, String alignment,
-			float freeSpaceForPageBreak, WrappingFunction wrappingFunction, boolean drawHeaderMargin)
-			throws IOException {
+	public void drawTitle(final TableLayout tableLayout, String title, PDFont font, int fontSize, float tableWidth,
+			float height, String alignment, float freeSpaceForPageBreak, WrappingFunction wrappingFunction,
+			boolean drawHeaderMargin) throws IOException {
 
 		ensureStreamIsOpen();
 
@@ -140,7 +132,7 @@ public class Table {
 			PDPageContentStream articleTitle = createPdPageContentStream();
 			Paragraph paragraph = new Paragraph(title, font, fontSize, tableWidth, HorizontalAlignment.get(alignment),
 					wrappingFunction);
-			paragraph.setDrawDebug(drawDebug);
+			paragraph.setDrawDebug(tableLayout.drawDebug());
 			yStart = paragraph.write(articleTitle, margin, yStart);
 			if (paragraph.getHeight() < height) {
 				yStart -= (height - paragraph.getHeight());
@@ -148,7 +140,7 @@ public class Table {
 
 			articleTitle.close();
 
-			if (drawDebug) {
+			if (tableLayout.drawDebug()) {
 				// margin
 				PDStreamUtils.rect(tableContentStream, margin, yStart, width, headerBottomMargin, Color.CYAN);
 			}
@@ -318,14 +310,14 @@ public class Table {
 					pageBreak();
 				}
 			}
-			drawRow(row);
+			drawRow(tableLayout, row);
 		}
 		endTable();
 
 		return yStart;
 	}
 
-	private void drawRow(Row row) throws IOException {
+	private void drawRow(final TableLayout tableLayout, final Row row) throws IOException {
 		// if it is not header row or first row in the table then remove row's
 		// top border
 		if (row != header && row != rows.get(0)) {
@@ -354,7 +346,7 @@ public class Table {
 			// redraw all headers on each currentPage
 			if (!header.isEmpty()) {
 				for (Row headerRow : header) {
-					drawRow(headerRow);
+					drawRow(tableLayout, headerRow);
 				}
 				// after you draw all header rows on next page please keep
 				// removing top borders to avoid double border drawing
@@ -384,12 +376,12 @@ public class Table {
 			row.removeTopBorders();
 		}
 
-		if (drawLines) {
+		if (tableLayout.drawLines()) {
 			drawVerticalLines(row);
 		}
 
-		if (drawContent) {
-			drawCellContent(row);
+		if (tableLayout.drawContent()) {
+			drawCellContent(tableLayout, row);
 		}
 	}
 
@@ -427,7 +419,7 @@ public class Table {
 		return new PDPageContentStream(getDocument(), getCurrentPage(), PDPageContentStream.AppendMode.APPEND, true);
 	}
 
-	private void drawCellContent(Row row) throws IOException {
+	private void drawCellContent(final TableLayout tableLayout, final Row row) throws IOException {
 
 		// position into first cell (horizontal)
 		float cursorX = margin;
@@ -552,7 +544,7 @@ public class Table {
 							- FontUtils.getDescent(cell.getFont(), cell.getFontSize())
 							- (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth());
 
-					if (drawDebug) {
+					if (tableLayout.drawDebug()) {
 						// @formatter:off
 						// top padding
 						PDStreamUtils.rect(tableContentStream,
@@ -1033,14 +1025,6 @@ public class Table {
 
 	protected void setYStart(float yStart) {
 		this.yStart = yStart;
-	}
-
-	public boolean isDrawDebug() {
-		return drawDebug;
-	}
-
-	public void setDrawDebug(boolean drawDebug) {
-		this.drawDebug = drawDebug;
 	}
 
 	public boolean tableIsBroken() {

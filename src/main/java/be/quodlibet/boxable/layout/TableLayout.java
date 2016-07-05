@@ -18,7 +18,13 @@ import be.quodlibet.boxable.layout.cell.CellLayouter;
 public class TableLayout {
 
 	private final List<CellLayouter> cellLayouters = new ArrayList<>();
-	
+
+	private boolean drawLines = true;
+
+	private boolean drawContent = true;
+
+	private boolean drawDebug = false;
+
 	public void layout(final Cell cell) {
 		for (final CellLayouter layouter : cellLayouters) {
 			layouter.layoutCell(cell);
@@ -37,4 +43,30 @@ public class TableLayout {
 		return this;
 	}
 
+	public boolean drawLines() {
+		return drawLines;
+	}
+
+	public TableLayout drawLines(final boolean drawLines) {
+		this.drawLines = drawLines;
+		return this;
+	}
+
+	public boolean drawContent() {
+		return drawContent;
+	}
+
+	public TableLayout drawContent(final boolean drawContent) {
+		this.drawContent = drawContent;
+		return this;
+	}
+
+	public boolean drawDebug() {
+		return drawDebug;
+	}
+
+	public TableLayout drawDebug(final boolean drawDebug) {
+		this.drawDebug = drawDebug;
+		return this;
+	}
 }

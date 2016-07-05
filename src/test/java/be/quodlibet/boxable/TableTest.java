@@ -43,7 +43,7 @@ public class TableTest {
 		boolean drawContent = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, true, drawContent,
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc,
 				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
@@ -107,7 +107,7 @@ public class TableTest {
 			}
 		}
 
-		table.draw(new TableLayout());
+		table.draw(new TableLayout().drawContent(drawContent).drawLines(true));
 
 		// Close Stream and save pdf
 		File file = new File("target/BoxableSample1.pdf");
@@ -200,7 +200,7 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc,
 				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
@@ -270,7 +270,7 @@ public class TableTest {
 
 			}
 		}
-		table.draw(new TableLayout());
+		table.draw(new TableLayout().drawContent(drawContent).drawLines(drawLines));
 
 		// Get all bookmarks of previous table
 		bookmarks.addAll(table.getBookmarks());
@@ -316,7 +316,7 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc,
 				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
@@ -356,7 +356,7 @@ public class TableTest {
 				HorizontalAlignment.get("center"), VerticalAlignment.get("bottom"));
 		cell6.setFont(PDType1Font.HELVETICA);
 		cell6.setFontSize(6);
-		table.draw(new TableLayout());
+		table.draw(new TableLayout().drawContent(drawContent).drawLines(drawLines));
 
 		// Save the document
 		File file = new File("target/BoxableSample3.pdf");
@@ -396,7 +396,7 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc,
 				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create header row
@@ -470,7 +470,7 @@ public class TableTest {
 
 			}
 		}
-		table.draw(new TableLayout());
+		table.draw(new TableLayout().drawContent(drawContent).drawLines(drawLines));
 
 		// Get all bookmarks of previous table
 		bookmarks.addAll(table.getBookmarks());
@@ -510,7 +510,7 @@ public class TableTest {
 		boolean drawLines = true;
 		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc, drawLines, drawContent,
+		Table table = new Table(yStart, yStartNewPage, bottomMargin, tableWidth, margin, doc,
 				new DefaultPageProvider(doc, page.getMediaBox()));
 
 		// Create Header row
@@ -542,7 +542,7 @@ public class TableTest {
 				"<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at bibendum leo. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lobortis enim vitae magna varius, nec scelerisque sapien elementum. Quisque porta eros in feugiat commodo. Phasellus a elit diam. Nullam pretium lorem malesuada, ullamcorper risus eget, dictum libero. Nulla neque ante, volutpat in tincidunt eu, porttitor ut purus. Fusce at mauris velit. Pellentesque vel tincidunt erat. </p><p>In vehicula velit nunc, sit amet ultricies neque fringilla vel. Quisque ac enim nisl. Ut quis leo et lorem iaculis porttitor a semper diam. Pellentesque lobortis nisi ac ipsum efficitur facilisis. Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent in tellus velit. Maecenas volutpat ipsum lacus, non fringilla neque faucibus et.</p>",
 				HorizontalAlignment.get("center"), VerticalAlignment.get("bottom"));
 		cell6.setFontSize(6);
-		table.draw(new TableLayout());
+		table.draw(new TableLayout().drawContent(drawContent).drawLines(drawLines));
 
 		// Save the document
 		File file = new File("target/BoxableSample5.pdf");
