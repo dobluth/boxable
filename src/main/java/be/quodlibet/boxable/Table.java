@@ -4,8 +4,6 @@
  */
 package be.quodlibet.boxable;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
@@ -15,11 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageXYZDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
@@ -35,9 +30,6 @@ import be.quodlibet.boxable.utils.PDStreamUtils;
 
 public class Table {
 
-	public PDDocument document;
-
-	private PDPage currentPage;
 	private PDPageContentStream tableContentStream;
 	private List<PDOutlineItem> bookmarks;
 	private List<Row> header = new ArrayList<>();
@@ -52,8 +44,6 @@ public class Table {
 	private boolean tableIsBroken = false;
 	private boolean removeTopBorders = false;
 
-	private PageProvider pageProvider;
-
 	// Defaults
 	PDFont font = PDType1Font.HELVETICA;
 	float fontSize = 6;
@@ -61,57 +51,35 @@ public class Table {
 	public Table() {
 	}
 
-	public Table(float yStart, float yStartNewPage, float width, PDDocument document, PDPage currentPage,
-			PageProvider pageProvider) throws IOException {
-		this.document = document;
+	public Table(float yStart, float yStartNewPage, float width) throws IOException {
 		// Initialize table
 		this.yStartNewPage = yStartNewPage;
 		this.width = width;
 		this.yStart = yStart;
-		this.currentPage = currentPage;
-		this.pageProvider = pageProvider;
 	}
 
-	public Table(float yStartNewPage, float width, PDDocument document, PageProvider pageProvider) throws IOException {
-		this.document = document;
+	public Table(float yStartNewPage, float width) throws IOException {
 		// Initialize table
 		this.yStartNewPage = yStartNewPage;
 		this.width = width;
-		this.pageProvider = pageProvider;
-
-		// Fonts needs to be loaded before page creation
-		this.currentPage = pageProvider.nextPage();
 	}
 
-	public void setPage(PageProvider provider) {
-		this.pageProvider = provider;
-		this.currentPage = pageProvider.getCurrentPage();
-		this.document = pageProvider.getDocument();
-	}
-
-	protected PDType0Font loadFont(String fontPath) throws IOException {
-		return FontUtils.loadFont(getDocument(), fontPath);
-	}
-
-	protected PDDocument getDocument() {
-		return document;
-	}
-
-	public void drawTitle(final TableLayout tableLayout, String title, PDFont font, int fontSize, float tableWidth,
-			float height, String alignment, float freeSpaceForPageBreak, boolean drawHeaderMargin) throws IOException {
-		drawTitle(tableLayout, title, font, fontSize, tableWidth, height, alignment, freeSpaceForPageBreak, null,
-				drawHeaderMargin);
-	}
-
-	public void drawTitle(final TableLayout tableLayout, String title, PDFont font, int fontSize, float tableWidth,
-			float height, String alignment, float freeSpaceForPageBreak, WrappingFunction wrappingFunction,
+	public void drawTitle(final TableLayout tableLayout, final PageProvider pageProvider, String title, PDFont font,
+			int fontSize, float tableWidth, float height, String alignment, float freeSpaceForPageBreak,
 			boolean drawHeaderMargin) throws IOException {
+		drawTitle(tableLayout, pageProvider, title, font, fontSize, tableWidth, height, alignment,
+				freeSpaceForPageBreak, null, drawHeaderMargin);
+	}
 
-		ensureStreamIsOpen();
+	public void drawTitle(final TableLayout tableLayout, final PageProvider pageProvider, String title, PDFont font,
+			int fontSize, float tableWidth, float height, String alignment, float freeSpaceForPageBreak,
+			WrappingFunction wrappingFunction, boolean drawHeaderMargin) throws IOException {
+
+		ensureStreamIsOpen(pageProvider);
 
 		if (isEndOfPage(tableLayout, freeSpaceForPageBreak)) {
 			this.tableContentStream.close();
-			pageBreak(tableLayout);
+			pageBreak(tableLayout, pageProvider);
 		}
 
 		if (title == null) {
@@ -119,7 +87,7 @@ public class Table {
 			// "row"
 			yStart -= height;
 		} else {
-			PDPageContentStream articleTitle = createPdPageContentStream();
+			PDPageContentStream articleTitle = createPdPageContentStream(pageProvider);
 			Paragraph paragraph = new Paragraph(title, font, fontSize, tableWidth, HorizontalAlignment.get(alignment),
 					wrappingFunction);
 			paragraph.setDrawDebug(tableLayout.drawDebug());
@@ -249,29 +217,24 @@ public class Table {
 	 * pageProvider
 	 *
 	 * @param yStartPosition
-	 * @param provider
+	 * @param pageProvider
 	 * @return
 	 * @throws IOException
 	 */
-	public float draw(final TableLayout tableLayout, float yStartPosition, PageProvider provider) throws IOException {
+	public float draw(final TableLayout tableLayout, final float yStartPosition, final PageProvider pageProvider)
+			throws IOException {
 		this.yStart = yStartPosition;
-		this.setPage(provider);
-		return draw(tableLayout);
+		return draw(tableLayout, pageProvider);
 	}
 
 	/**
 	 * Draw the table at the top of the current page of a pageProvider
 	 *
-	 * @param provider
+	 * @param pageProvider
 	 * @return
 	 * @throws IOException
 	 */
-	public float draw(final TableLayout tableLayout, PageProvider provider) throws IOException {
-		this.setPage(provider);
-		return draw(tableLayout);
-	}
-
-	public float draw(final TableLayout tableLayout) throws IOException {
+	public float draw(final TableLayout tableLayout, final PageProvider pageProvider) throws IOException {
 		// if certain settings are not provided, default them
 		if (yStartNewPage == 0) {
 			yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
@@ -290,7 +253,7 @@ public class Table {
 		// width based on the content.
 		initColumnWidths(tableLayout);
 
-		ensureStreamIsOpen();
+		ensureStreamIsOpen(pageProvider);
 
 		for (Row row : rows) {
 			if (header.contains(row)) {
@@ -298,17 +261,18 @@ public class Table {
 				// the page
 				// if not draw them on another side
 				if (isEndOfPage(tableLayout, getMinimumHeight())) {
-					pageBreak(tableLayout);
+					pageBreak(tableLayout, pageProvider);
 				}
 			}
-			drawRow(tableLayout, row);
+			drawRow(tableLayout, pageProvider, row);
 		}
 		endTable(tableLayout);
 
 		return yStart;
 	}
 
-	private void drawRow(final TableLayout tableLayout, final Row row) throws IOException {
+	private void drawRow(final TableLayout tableLayout, final PageProvider pageProvider, final Row row)
+			throws IOException {
 		// if it is not header row or first row in the table then remove row's
 		// top border
 		if (row != header && row != rows.get(0)) {
@@ -317,7 +281,7 @@ public class Table {
 		// draw the bookmark
 		if (row.getBookmark() != null) {
 			PDPageXYZDestination bookmarkDestination = new PDPageXYZDestination();
-			bookmarkDestination.setPage(currentPage);
+			bookmarkDestination.setPage(pageProvider.getCurrentPage());
 			bookmarkDestination.setTop((int) yStart);
 			row.getBookmark().setDestination(bookmarkDestination);
 			this.addBookmark(row.getBookmark());
@@ -332,12 +296,12 @@ public class Table {
 			endTable(tableLayout);
 
 			// insert page break
-			pageBreak(tableLayout);
+			pageBreak(tableLayout, pageProvider);
 
 			// redraw all headers on each currentPage
 			if (!header.isEmpty()) {
 				for (Row headerRow : header) {
-					drawRow(tableLayout, headerRow);
+					drawRow(tableLayout, pageProvider, headerRow);
 				}
 				// after you draw all header rows on next page please keep
 				// removing top borders to avoid double border drawing
@@ -372,45 +336,17 @@ public class Table {
 		}
 
 		if (tableLayout.drawContent()) {
-			drawCellContent(tableLayout, row);
+			drawCellContent(tableLayout, pageProvider, row);
 		}
 	}
 
-	/**
-	 * <p>
-	 * Method to switch between the {@link PageProvider} and the abstract method
-	 * {@link Table#createPage()}, preferring the {@link PageProvider}.
-	 * </p>
-	 * <p>
-	 * Will be removed once {@link #createPage()} is removed.
-	 * </p>
-	 *
-	 * @return
-	 */
-	private PDPage createNewPage() {
-		if (pageProvider != null) {
-			return pageProvider.nextPage();
-		}
-
-		return createPage();
+	private PDPageContentStream createPdPageContentStream(final PageProvider pageProvider) throws IOException {
+		return new PDPageContentStream(pageProvider.getDocument(), pageProvider.getCurrentPage(),
+				PDPageContentStream.AppendMode.APPEND, true);
 	}
 
-	/**
-	 * @deprecated Use a {@link PageProvider} instead
-	 * @return
-	 */
-	@Deprecated
-	// remove also createNewPage()
-	protected PDPage createPage() {
-		throw new IllegalStateException(
-				"You either have to provide a " + PageProvider.class.getCanonicalName() + " or override this method");
-	}
-
-	private PDPageContentStream createPdPageContentStream() throws IOException {
-		return new PDPageContentStream(getDocument(), getCurrentPage(), PDPageContentStream.AppendMode.APPEND, true);
-	}
-
-	private void drawCellContent(final TableLayout tableLayout, final Row row) throws IOException {
+	private void drawCellContent(final TableLayout tableLayout, final PageProvider pageProvider, final Row row)
+			throws IOException {
 
 		// position into first cell (horizontal)
 		float cursorX = tableLayout.margin();
@@ -452,7 +388,7 @@ public class Table {
 					cursorX += cell.getHorizontalFreeSpace();
 					break;
 				}
-				imageCell.getImage().draw(document, tableContentStream, cursorX, cursorY);
+				imageCell.getImage().draw(pageProvider.getDocument(), tableContentStream, cursorX, cursorY);
 
 			} else {
 				// no text without font
@@ -865,9 +801,9 @@ public class Table {
 		return width;
 	}
 
-	private void ensureStreamIsOpen() throws IOException {
+	private void ensureStreamIsOpen(final PageProvider pageProvider) throws IOException {
 		if (tableContentStream == null) {
-			tableContentStream = createPdPageContentStream();
+			tableContentStream = createPdPageContentStream(pageProvider);
 		}
 	}
 
@@ -875,11 +811,6 @@ public class Table {
 		this.tableContentStream.close();
 		this.tableContentStream = null;
 		yStart -= tableLayout.margin();// add margin at bottom of table
-	}
-
-	public PDPage getCurrentPage() {
-		checkNotNull(this.currentPage, "No current page defined.");
-		return this.currentPage;
 	}
 
 	private boolean isEndOfPage(final TableLayout tableLayout, final Row row) {
@@ -906,15 +837,15 @@ public class Table {
 		return isEndOfPage;
 	}
 
-	public void pageBreak(final TableLayout tableLayout) throws IOException {
+	public void pageBreak(final TableLayout tableLayout, final PageProvider pageProvider) throws IOException {
 		if (tableContentStream != null) {
 			tableContentStream.close();
 		}
 
-		this.currentPage = createNewPage();
+		pageProvider.nextPage();
 		yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
 		this.yStart = yStartNewPage - tableLayout.pageTopMargin();
-		this.tableContentStream = createPdPageContentStream();
+		this.tableContentStream = createPdPageContentStream(pageProvider);
 	}
 
 	private void addBookmark(PDOutlineItem bookmark) {

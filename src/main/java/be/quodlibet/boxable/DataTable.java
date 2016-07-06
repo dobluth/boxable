@@ -10,13 +10,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
-import be.quodlibet.boxable.Cell;
-import be.quodlibet.boxable.HorizontalAlignment;
-import be.quodlibet.boxable.Row;
-import be.quodlibet.boxable.Table;
-import be.quodlibet.boxable.VerticalAlignment;
 import be.quodlibet.boxable.line.LineStyle;
-import be.quodlibet.boxable.page.DefaultPageProvider;
 import be.quodlibet.boxable.utils.FontUtils;
 
 /**
@@ -53,7 +47,7 @@ public class DataTable {
 		dpage.setMediaBox(page.getMediaBox());
 		dpage.setRotation(page.getRotation());
 		ddoc.addPage(dpage);
-		Table dummyTable = new Table(10f, table.getWidth(), ddoc, new DefaultPageProvider(ddoc, page.getMediaBox()));
+		Table dummyTable = new Table(10f, table.getWidth());
 		Row dr = dummyTable.createRow(0f);
 		headerCellTemplate = dr.createCell(10f, "A", HorizontalAlignment.CENTER, VerticalAlignment.MIDDLE);
 		dataCellTemplateEven = dr.createCell(10f, "A", HorizontalAlignment.LEFT, VerticalAlignment.MIDDLE);

@@ -46,10 +46,11 @@ public class DataTableTest {
 					"Row " + i + " Col Three", "Row " + i + " Col Four", "Row " + i + " Col Five")));
 		}
 
-		Table dataTable = new Table(yStart, tableWidth, doc, new DefaultPageProvider(doc, page.getMediaBox()));
+		Table dataTable = new Table(yStart, tableWidth);
 		DataTable t = new DataTable(dataTable, page);
 		t.addListToTable(data, DataTable.HASHEADER);
-		dataTable.draw(new TableLayout().pageBottomMargin(bottomMargin));
+		dataTable.draw(new TableLayout().pageBottomMargin(bottomMargin),
+				new DefaultPageProvider(doc, page.getMediaBox()));
 		File file = new File("target/ListExampleLandscape.pdf");
 		System.out.println("Sample file saved at : " + file.getAbsolutePath());
 		Files.createParentDirs(file);
