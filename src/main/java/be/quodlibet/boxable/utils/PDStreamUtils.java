@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import be.quodlibet.boxable.line.LineStyle;
+import be.quodlibet.boxable.page.PageProvider;
 
 /**
  * <p>
@@ -142,5 +143,24 @@ public final class PDStreamUtils {
 		} else {
 			stream.setLineDashPattern(new float[] {}, 0.0f);
 		}
+	}
+
+	/**
+	 * <p>
+	 * Creates a {@linkplain PDPageContentStream} using the page provider's
+	 * {@linkplain PageProvider#getDocument() document} on the
+	 * {@linkplain PageProvider#getCurrentPage() current page}.
+	 * </p>
+	 * 
+	 * @param pageProvider
+	 *            The {@linkplain PageProvider} used to create the stream
+	 * @return The {@linkplain PDPageContentStream} that can be used to interact
+	 *         with the current page of the document
+	 * @throws IOException
+	 *             If opening the stream fails
+	 */
+	public static PDPageContentStream createStream(final PageProvider pageProvider) throws IOException {
+		return new PDPageContentStream(pageProvider.getDocument(), pageProvider.getCurrentPage(),
+				PDPageContentStream.AppendMode.APPEND, true);
 	}
 }
