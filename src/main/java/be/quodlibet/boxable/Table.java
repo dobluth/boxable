@@ -74,12 +74,12 @@ public class Table {
 			int fontSize, float tableWidth, float height, String alignment, float freeSpaceForPageBreak,
 			WrappingFunction wrappingFunction, boolean drawHeaderMargin) throws IOException {
 
-		final DrawContext drawContext = new DrawContext();
+		final DrawContext drawContext = new DrawContext(pageProvider);
 		// ensure a stream is open
-		drawContext.stream(pageProvider);
+		drawContext.stream();
 
 		if (isEndOfPage(tableLayout, freeSpaceForPageBreak)) {
-			pageBreak(drawContext, tableLayout, pageProvider);
+			pageBreak(drawContext, tableLayout);
 		}
 
 		if (title == null) {
@@ -100,8 +100,8 @@ public class Table {
 
 			if (tableLayout.drawDebug()) {
 				// margin
-				PDStreamUtils.rect(drawContext.stream(pageProvider), tableLayout.margin(), yStart, width,
-						headerBottomMargin, Color.CYAN);
+				PDStreamUtils.rect(drawContext.stream(), tableLayout.margin(), yStart, width, headerBottomMargin,
+						Color.CYAN);
 			}
 		}
 
@@ -253,9 +253,9 @@ public class Table {
 		// width based on the content.
 		initColumnWidths(tableLayout);
 
-		final DrawContext drawContext = new DrawContext();
+		final DrawContext drawContext = new DrawContext(pageProvider);
 		// ensure the stream is open
-		drawContext.stream(pageProvider);
+		drawContext.stream();
 
 		for (Row row : rows) {
 			if (header.contains(row)) {
@@ -263,18 +263,18 @@ public class Table {
 				// the page
 				// if not draw them on another side
 				if (isEndOfPage(tableLayout, getMinimumHeight())) {
-					pageBreak(drawContext, tableLayout, pageProvider);
+					pageBreak(drawContext, tableLayout);
 				}
 			}
-			drawRow(drawContext, tableLayout, pageProvider, row);
+			drawRow(drawContext, tableLayout, row);
 		}
 		endTable(drawContext, tableLayout);
 
 		return yStart;
 	}
 
-	private void drawRow(final DrawContext drawContext, final TableLayout tableLayout, final PageProvider pageProvider,
-			final Row row) throws IOException {
+	private void drawRow(final DrawContext drawContext, final TableLayout tableLayout, final Row row)
+			throws IOException {
 		// if it is not header row or first row in the table then remove row's
 		// top border
 		if (row != header && row != rows.get(0)) {
@@ -283,7 +283,7 @@ public class Table {
 		// draw the bookmark
 		if (row.getBookmark() != null) {
 			PDPageXYZDestination bookmarkDestination = new PDPageXYZDestination();
-			bookmarkDestination.setPage(pageProvider.getCurrentPage());
+			bookmarkDestination.setPage(drawContext.pageProvider().getCurrentPage());
 			bookmarkDestination.setTop((int) yStart);
 			row.getBookmark().setDestination(bookmarkDestination);
 			this.addBookmark(row.getBookmark());
@@ -298,12 +298,12 @@ public class Table {
 			endTable(drawContext, tableLayout);
 
 			// insert page break
-			pageBreak(drawContext, tableLayout, pageProvider);
+			pageBreak(drawContext, tableLayout);
 
 			// redraw all headers on each currentPage
 			if (!header.isEmpty()) {
 				for (Row headerRow : header) {
-					drawRow(drawContext, tableLayout, pageProvider, headerRow);
+					drawRow(drawContext, tableLayout, headerRow);
 				}
 				// after you draw all header rows on next page please keep
 				// removing top borders to avoid double border drawing
@@ -334,26 +334,27 @@ public class Table {
 		}
 
 		if (tableLayout.drawLines()) {
-			drawVerticalLines(drawContext, pageProvider, tableLayout, row);
+			drawVerticalLines(drawContext, tableLayout, row);
 		}
 
 		if (tableLayout.drawContent()) {
-			drawCellContent(drawContext, tableLayout, pageProvider, row);
+			drawCellContent(drawContext, tableLayout, row);
 		}
 	}
 
-	private void drawCellContent(final DrawContext drawContext, final TableLayout tableLayout,
-			final PageProvider pageProvider, final Row row) throws IOException {
+	private void drawCellContent(final DrawContext drawContext, final TableLayout tableLayout, final Row row)
+			throws IOException {
 
 		// position into first cell (horizontal)
 		float cursorX = tableLayout.margin();
 		float cursorY;
 
-		for (Cell cell : row.getCells()) {
+		for (final Cell cell : row.getCells()) {
 
 			// remember horizontal cursor position, so we can advance to the
 			// next cell easily later
 			float cellStartX = cursorX;
+			final PDPageContentStream stream = drawContext.stream();
 			if (cell instanceof ImageCell) {
 				final ImageCell imageCell = (ImageCell) cell;
 
@@ -385,8 +386,7 @@ public class Table {
 					cursorX += cell.getHorizontalFreeSpace();
 					break;
 				}
-				imageCell.getImage().draw(pageProvider.getDocument(), drawContext.stream(pageProvider), cursorX,
-						cursorY);
+				imageCell.getImage().draw(drawContext.pageProvider().getDocument(), stream, cursorX, cursorY);
 
 			} else {
 				// no text without font
@@ -395,25 +395,9 @@ public class Table {
 				}
 
 				// font settings
-				drawContext.stream(pageProvider).setFont(cell.getFont(), cell.getFontSize());
+				stream.setFont(cell.getFont(), cell.getFontSize());
 
 				if (cell.isTextRotated()) {
-					// debugging mode - drawing (default!) padding of rotated
-					// cells
-					// left
-					// PDStreamUtils.rect(tableContentStream, cursorX, yStart,
-					// 5, cell.getHeight(), Color.GREEN);
-					// top
-					// PDStreamUtils.rect(tableContentStream, cursorX, yStart,
-					// cell.getWidth(), 5 , Color.GREEN);
-					// bottom
-					// PDStreamUtils.rect(tableContentStream, cursorX, yStart -
-					// cell.getHeight(), cell.getWidth(), -5 , Color.GREEN);
-					// right
-					// PDStreamUtils.rect(tableContentStream, cursorX +
-					// cell.getWidth() - 5, yStart, 5, cell.getHeight(),
-					// Color.GREEN);
-
 					cursorY = yStart - cell.getInnerHeight() - cell.getTopPadding()
 							- (cell.getTopBorder() != null ? cell.getTopBorder().getWidth() : 0);
 
@@ -446,22 +430,6 @@ public class Table {
 					}
 
 				} else {
-					// debugging mode - drawing (default!) padding of rotated
-					// cells
-					// left
-					// PDStreamUtils.rect(tableContentStream, cursorX, yStart,
-					// 5, cell.getHeight(), Color.RED);
-					// top
-					// PDStreamUtils.rect(tableContentStream, cursorX, yStart,
-					// cell.getWidth(), 5 , Color.RED);
-					// bottom
-					// PDStreamUtils.rect(tableContentStream, cursorX, yStart -
-					// cell.getHeight(), cell.getWidth(), -5 , Color.RED);
-					// right
-					// PDStreamUtils.rect(tableContentStream, cursorX +
-					// cell.getWidth() - 5, yStart, 5, cell.getHeight(),
-					// Color.RED);
-
 					// position at top of current cell descending by font height
 					// - font descent, because we are
 					// positioning the base line here
@@ -472,14 +440,14 @@ public class Table {
 					if (tableLayout.drawDebug()) {
 						// @formatter:off
 						// top padding
-						PDStreamUtils.rect(drawContext.stream(pageProvider),
+						PDStreamUtils.rect(stream,
 								cursorX + (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth()),
 								yStart - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
 								cell.getWidth() - (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth())
 										- (cell.getRightBorder() == null ? 0 : cell.getRightBorder().getWidth()),
 								cell.getTopPadding(), Color.RED);
 						// bottom padding
-						PDStreamUtils.rect(drawContext.stream(pageProvider),
+						PDStreamUtils.rect(stream,
 								cursorX + (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth()),
 								yStart - cell.getHeight()
 										+ (cell.getBottomBorder() == null ? 0 : cell.getBottomBorder().getWidth())
@@ -488,7 +456,7 @@ public class Table {
 										- (cell.getRightBorder() == null ? 0 : cell.getRightBorder().getWidth()),
 								cell.getBottomPadding(), Color.RED);
 						// left padding
-						PDStreamUtils.rect(drawContext.stream(pageProvider),
+						PDStreamUtils.rect(stream,
 								cursorX + (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth()),
 								yStart - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
 								cell.getLeftPadding(),
@@ -496,7 +464,7 @@ public class Table {
 										- (cell.getBottomBorder() == null ? 0 : cell.getBottomBorder().getWidth()),
 								Color.RED);
 						// right padding
-						PDStreamUtils.rect(drawContext.stream(pageProvider),
+						PDStreamUtils.rect(stream,
 								cursorX + cell.getWidth()
 										- (cell.getRightBorder() == null ? 0 : cell.getRightBorder().getWidth()),
 								yStart - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
@@ -547,10 +515,9 @@ public class Table {
 				// if it is head row or if it is header cell then please use
 				// bold font
 				if (row.equals(header) || cell.isHeaderCell()) {
-					drawContext.stream(pageProvider).setFont(cell.getParagraph().getFont(true, false),
-							cell.getFontSize());
+					stream.setFont(cell.getParagraph().getFont(true, false), cell.getFontSize());
 				}
-				drawContext.stream(pageProvider).setNonStrokingColor(cell.getTextColor());
+				stream.setNonStrokingColor(cell.getTextColor());
 
 				int italicCounter = 0;
 				int boldCounter = 0;
@@ -613,25 +580,25 @@ public class Table {
 							cursorX += Float.parseFloat(token.getData());
 							break;
 						case ORDERING:
-							drawContext.stream(pageProvider).beginText();
+							stream.beginText();
 							currentFont = cell.getParagraph().getFont(boldCounter > 0, italicCounter > 0);
-							drawContext.stream(pageProvider).setFont(currentFont, cell.getFontSize());
+							stream.setFont(currentFont, cell.getFontSize());
 							if (cell.isTextRotated()) {
 								final AffineTransform transform = AffineTransform.getTranslateInstance(cursorX,
 										cursorY);
 								transform.concatenate(AffineTransform.getRotateInstance(Math.PI * 0.5f));
 								transform.concatenate(AffineTransform.getTranslateInstance(-cursorX, -cursorY));
-								drawContext.stream(pageProvider).setTextMatrix(new Matrix(transform));
-								drawContext.stream(pageProvider).newLineAtOffset(cursorX, cursorY);
-								drawContext.stream(pageProvider).showText(token.getData());
-								drawContext.stream(pageProvider).endText();
-								drawContext.stream(pageProvider).closePath();
+								stream.setTextMatrix(new Matrix(transform));
+								stream.newLineAtOffset(cursorX, cursorY);
+								stream.showText(token.getData());
+								stream.endText();
+								stream.closePath();
 								cursorY += currentFont.getStringWidth(token.getData()) / 1000 * cell.getFontSize();
 							} else {
-								drawContext.stream(pageProvider).newLineAtOffset(cursorX, cursorY);
-								drawContext.stream(pageProvider).showText(token.getData());
-								drawContext.stream(pageProvider).endText();
-								drawContext.stream(pageProvider).closePath();
+								stream.newLineAtOffset(cursorX, cursorY);
+								stream.showText(token.getData());
+								stream.endText();
+								stream.closePath();
 								cursorX += currentFont.getStringWidth(token.getData()) / 1000 * cell.getFontSize();
 							}
 							break;
@@ -640,7 +607,7 @@ public class Table {
 								// move cursorX up because bullet needs to be in
 								// the middle of font height
 								cursorX += FontUtils.getHeight(currentFont, cell.getFontSize()) / 2;
-								PDStreamUtils.rect(drawContext.stream(pageProvider), cursorX, cursorY,
+								PDStreamUtils.rect(stream, cursorX, cursorY,
 										currentFont.getStringWidth(token.getData()) / 1000 * cell.getFontSize(),
 										currentFont.getStringWidth(" ") / 1000 * cell.getFontSize(),
 										cell.getTextColor());
@@ -653,7 +620,7 @@ public class Table {
 								// move cursorY up because bullet needs to be in
 								// the middle of font height
 								cursorY += FontUtils.getHeight(currentFont, cell.getFontSize()) / 2;
-								PDStreamUtils.rect(drawContext.stream(pageProvider), cursorX, cursorY,
+								PDStreamUtils.rect(stream, cursorX, cursorY,
 										currentFont.getStringWidth(token.getData()) / 1000 * cell.getFontSize(),
 										currentFont.getStringWidth(" ") / 1000 * cell.getFontSize(),
 										cell.getTextColor());
@@ -665,26 +632,26 @@ public class Table {
 							}
 							break;
 						case TEXT:
-							drawContext.stream(pageProvider).beginText();
+							stream.beginText();
 							currentFont = cell.getParagraph().getFont(boldCounter > 0, italicCounter > 0);
-							drawContext.stream(pageProvider).setFont(currentFont, cell.getFontSize());
+							stream.setFont(currentFont, cell.getFontSize());
 							if (cell.isTextRotated()) {
 								final AffineTransform transform = AffineTransform.getTranslateInstance(cursorX,
 										cursorY);
 								transform.concatenate(AffineTransform.getRotateInstance(Math.PI * 0.5f));
 								transform.concatenate(AffineTransform.getTranslateInstance(-cursorX, -cursorY));
-								drawContext.stream(pageProvider).setTextMatrix(new Matrix(transform));
-								drawContext.stream(pageProvider).newLineAtOffset(cursorX, cursorY);
-								drawContext.stream(pageProvider).showText(token.getData());
-								drawContext.stream(pageProvider).endText();
-								drawContext.stream(pageProvider).closePath();
+								stream.setTextMatrix(new Matrix(transform));
+								stream.newLineAtOffset(cursorX, cursorY);
+								stream.showText(token.getData());
+								stream.endText();
+								stream.closePath();
 								cursorY += currentFont.getStringWidth(token.getData()) / 1000 * cell.getFontSize();
 							} else {
 								try {
-									drawContext.stream(pageProvider).newLineAtOffset(cursorX, cursorY);
-									drawContext.stream(pageProvider).showText(token.getData());
-									drawContext.stream(pageProvider).endText();
-									drawContext.stream(pageProvider).closePath();
+									stream.newLineAtOffset(cursorX, cursorY);
+									stream.showText(token.getData());
+									stream.endText();
+									stream.closePath();
 									cursorX += currentFont.getStringWidth(token.getData()) / 1000 * cell.getFontSize();
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -709,8 +676,8 @@ public class Table {
 
 	}
 
-	private void drawVerticalLines(final DrawContext drawContext, final PageProvider pageProvider,
-			final TableLayout tableLayout, final Row row) throws IOException {
+	private void drawVerticalLines(final DrawContext drawContext, final TableLayout tableLayout, final Row row)
+			throws IOException {
 		float xStart = tableLayout.margin();
 
 		// give an extra margin to the latest cell
@@ -720,17 +687,17 @@ public class Table {
 		while (cellIterator.hasNext()) {
 			Cell cell = cellIterator.next();
 
-			fillCellColor(drawContext, pageProvider, cell, yStart, xStart, cellIterator);
+			fillCellColor(drawContext, cell, yStart, xStart, cellIterator);
 
-			drawCellBorders(drawContext, pageProvider, row, cell, xStart, xEnd);
+			drawCellBorders(drawContext, row, cell, xStart, xEnd);
 
 			xStart += getWidth(cell, cellIterator);
 		}
 
 	}
 
-	private void drawCellBorders(final DrawContext drawContext, final PageProvider pageProvider, final Row row,
-			final Cell cell, final float xStart, final float xEnd) throws IOException {
+	private void drawCellBorders(final DrawContext drawContext, final Row row, final Cell cell, final float xStart,
+			final float xEnd) throws IOException {
 
 		float yEnd = yStart - row.getHeight();
 
@@ -738,22 +705,21 @@ public class Table {
 		LineStyle topBorder = cell.getTopBorder();
 		if (topBorder != null) {
 			float y = yStart - topBorder.getWidth() / 2;
-			drawLine(drawContext, pageProvider, xStart, y, xStart + cell.getWidth(), y, topBorder);
+			drawLine(drawContext, xStart, y, xStart + cell.getWidth(), y, topBorder);
 		}
 
 		// right
 		LineStyle rightBorder = cell.getRightBorder();
 		if (rightBorder != null) {
 			float x = xStart + cell.getWidth() - rightBorder.getWidth() / 2;
-			drawLine(drawContext, pageProvider, x, yStart - (topBorder == null ? 0 : topBorder.getWidth()), x, yEnd,
-					rightBorder);
+			drawLine(drawContext, x, yStart - (topBorder == null ? 0 : topBorder.getWidth()), x, yEnd, rightBorder);
 		}
 
 		// bottom
 		LineStyle bottomBorder = cell.getBottomBorder();
 		if (bottomBorder != null) {
 			float y = yEnd + bottomBorder.getWidth() / 2;
-			drawLine(drawContext, pageProvider, xStart, y,
+			drawLine(drawContext, xStart, y,
 					xStart + cell.getWidth() - (rightBorder == null ? 0 : rightBorder.getWidth()), y, bottomBorder);
 		}
 
@@ -761,38 +727,38 @@ public class Table {
 		LineStyle leftBorder = cell.getLeftBorder();
 		if (leftBorder != null) {
 			float x = xStart + leftBorder.getWidth() / 2;
-			drawLine(drawContext, pageProvider, x, yStart, x,
-					yEnd + (bottomBorder == null ? 0 : bottomBorder.getWidth()), leftBorder);
+			drawLine(drawContext, x, yStart, x, yEnd + (bottomBorder == null ? 0 : bottomBorder.getWidth()),
+					leftBorder);
 		}
 
 	}
 
-	private void drawLine(final DrawContext drawContext, final PageProvider pageProvider, final float xStart,
-			final float yStart, final float xEnd, final float yEnd, final LineStyle border) throws IOException {
-		PDStreamUtils.setLineStyles(drawContext.stream(pageProvider), border);
-		drawContext.stream(pageProvider).moveTo(xStart, yStart);
-		drawContext.stream(pageProvider).lineTo(xEnd, yEnd);
-		drawContext.stream(pageProvider).stroke();
-		drawContext.stream(pageProvider).closePath();
+	private void drawLine(final DrawContext drawContext, final float xStart, final float yStart, final float xEnd,
+			final float yEnd, final LineStyle border) throws IOException {
+		PDStreamUtils.setLineStyles(drawContext.stream(), border);
+		drawContext.stream().moveTo(xStart, yStart);
+		drawContext.stream().lineTo(xEnd, yEnd);
+		drawContext.stream().stroke();
+		drawContext.stream().closePath();
 	}
 
-	private void fillCellColor(final DrawContext drawContext, final PageProvider pageProvider, final Cell cell,
-			float yStart, final float xStart, final Iterator<Cell> cellIterator) throws IOException {
+	private void fillCellColor(final DrawContext drawContext, final Cell cell, float yStart, final float xStart,
+			final Iterator<Cell> cellIterator) throws IOException {
 
 		if (cell.getFillColor() != null) {
-			drawContext.stream(pageProvider).setNonStrokingColor(cell.getFillColor());
+			drawContext.stream().setNonStrokingColor(cell.getFillColor());
 
 			// y start is bottom pos
 			yStart = yStart - cell.getHeight();
 			float height = cell.getHeight() - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth());
 
 			float cellWidth = getWidth(cell, cellIterator);
-			drawContext.stream(pageProvider).addRect(xStart, yStart, cellWidth, height);
-			drawContext.stream(pageProvider).fill();
-			drawContext.stream(pageProvider).closePath();
+			drawContext.stream().addRect(xStart, yStart, cellWidth, height);
+			drawContext.stream().fill();
+			drawContext.stream().closePath();
 
 			// Reset NonStroking Color to default value
-			drawContext.stream(pageProvider).setNonStrokingColor(Color.BLACK);
+			drawContext.stream().setNonStrokingColor(Color.BLACK);
 		}
 	}
 
@@ -835,13 +801,13 @@ public class Table {
 		return isEndOfPage;
 	}
 
-	private void pageBreak(final DrawContext drawContext, final TableLayout tableLayout,
-			final PageProvider pageProvider) throws IOException {
+	private void pageBreak(final DrawContext drawContext, final TableLayout tableLayout) throws IOException {
 		drawContext.closeStream();
-		pageProvider.nextPage();
-		yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
+		drawContext.pageProvider().nextPage();
+		yStartNewPage = drawContext.pageProvider().getCurrentPage().getMediaBox().getHeight()
+				- (2 * tableLayout.margin());
 		this.yStart = yStartNewPage - tableLayout.pageTopMargin();
-		drawContext.stream(pageProvider);
+		drawContext.stream();
 	}
 
 	private void addBookmark(PDOutlineItem bookmark) {

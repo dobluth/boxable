@@ -19,7 +19,13 @@ import be.quodlibet.boxable.utils.PDStreamUtils;
  */
 class DrawContext {
 
+	private final PageProvider pageProvider;
+
 	private PDPageContentStream stream;
+
+	public DrawContext(final PageProvider pageProvider) {
+		this.pageProvider = pageProvider;
+	}
 
 	public void closeStream() throws IOException {
 		if (stream != null) {
@@ -28,10 +34,14 @@ class DrawContext {
 		}
 	}
 
-	public PDPageContentStream stream(final PageProvider pageProvider) throws IOException {
+	public PDPageContentStream stream() throws IOException {
 		if (stream == null) {
 			stream = PDStreamUtils.createStream(pageProvider);
 		}
 		return stream;
+	}
+
+	public PageProvider pageProvider() {
+		return pageProvider;
 	}
 }
