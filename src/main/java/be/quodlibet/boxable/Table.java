@@ -39,7 +39,6 @@ public class Table {
 	private float width;
 
 	private boolean tableIsBroken = false;
-	private boolean removeTopBorders = false;
 
 	// Defaults
 	PDFont font = PDType1Font.HELVETICA;
@@ -288,14 +287,10 @@ public class Table {
 		}
 
 		// we want to remove the borders as often as possible
-		removeTopBorders = true;
+		drawContext.removeTopBorders(true);
 
 		if (isEndOfPage(tableLayout, row)) {
-
-			// Draw line at bottom of table
 			endTable(drawContext, tableLayout);
-
-			// insert page break
 			pageBreak(drawContext, tableLayout);
 
 			// redraw all headers on each currentPage
@@ -305,29 +300,19 @@ public class Table {
 				}
 				// after you draw all header rows on next page please keep
 				// removing top borders to avoid double border drawing
-				removeTopBorders = true;
+				drawContext.removeTopBorders(true);
 			} else {
 				// after a page break, we have to ensure that top borders get
 				// drawn
-				removeTopBorders = false;
+				drawContext.removeTopBorders(false);
 			}
 		}
 		// if it is first row in the table, we have to draw the top border
 		if (row == rows.get(0)) {
-			removeTopBorders = false;
+			drawContext.removeTopBorders(false);
 		}
 
-		if (removeTopBorders) {
-			row.removeTopBorders();
-		}
-
-		// if it is header row or first row in the table, we have to draw the
-		// top border
-		if (row == rows.get(0)) {
-			removeTopBorders = false;
-		}
-
-		if (removeTopBorders) {
+		if (drawContext.removeTopBorders()) {
 			row.removeTopBorders();
 		}
 

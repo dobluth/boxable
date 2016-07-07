@@ -23,6 +23,8 @@ class DrawContext {
 
 	private PDPageContentStream stream;
 
+	private boolean removeTopBorders = false;
+
 	public DrawContext(final PageProvider pageProvider) {
 		this.pageProvider = pageProvider;
 	}
@@ -43,5 +45,14 @@ class DrawContext {
 
 	public PageProvider pageProvider() {
 		return pageProvider;
+	}
+
+	public boolean removeTopBorders() {
+		return removeTopBorders;
+	}
+
+	public DrawContext removeTopBorders(final boolean removeTopBorders) {
+		this.removeTopBorders = removeTopBorders;
+		return this;
 	}
 }
