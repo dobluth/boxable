@@ -25,6 +25,8 @@ public class TableLayout {
 
 	private float margin = 10;
 
+	private float headerBottomMargin = 4f;
+
 	private boolean drawLines = true;
 
 	private boolean drawContent = true;
@@ -73,6 +75,15 @@ public class TableLayout {
 
 	public TableLayout margin(final float margin) {
 		this.margin = margin;
+		return this;
+	}
+
+	public float headerBottomMargin() {
+		return headerBottomMargin;
+	}
+
+	public TableLayout headerBottomMargin(final float headerBottomMargin) {
+		this.headerBottomMargin = headerBottomMargin;
 		return this;
 	}
 

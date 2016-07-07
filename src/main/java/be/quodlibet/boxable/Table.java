@@ -38,8 +38,6 @@ public class Table {
 	private float yStart;
 	private float width;
 
-	private float headerBottomMargin = 4f;
-
 	private boolean tableIsBroken = false;
 	private boolean removeTopBorders = false;
 
@@ -100,13 +98,13 @@ public class Table {
 
 			if (tableLayout.drawDebug()) {
 				// margin
-				PDStreamUtils.rect(drawContext.stream(), tableLayout.margin(), yStart, width, headerBottomMargin,
-						Color.CYAN);
+				PDStreamUtils.rect(drawContext.stream(), tableLayout.margin(), yStart, width,
+						tableLayout.headerBottomMargin(), Color.CYAN);
 			}
 		}
 
 		if (drawHeaderMargin) {
-			yStart -= headerBottomMargin;
+			yStart -= tableLayout.headerBottomMargin();
 		}
 	}
 
