@@ -38,8 +38,6 @@ public class Table {
 	private float yStart;
 	private float width;
 
-	private boolean tableIsBroken = false;
-
 	// Defaults
 	PDFont font = PDType1Font.HELVETICA;
 	float fontSize = 6;
@@ -75,7 +73,7 @@ public class Table {
 		// ensure a stream is open
 		drawContext.stream();
 
-		if (isEndOfPage(tableLayout, freeSpaceForPageBreak)) {
+		if (isEndOfPage(drawContext, tableLayout, freeSpaceForPageBreak)) {
 			pageBreak(drawContext, tableLayout);
 		}
 
@@ -215,10 +213,10 @@ public class Table {
 	 *
 	 * @param yStartPosition
 	 * @param pageProvider
-	 * @return
+	 * @return The {@linkplain DrawResult}
 	 * @throws IOException
 	 */
-	public float draw(final TableLayout tableLayout, final float yStartPosition, final PageProvider pageProvider)
+	public DrawResult draw(final TableLayout tableLayout, final float yStartPosition, final PageProvider pageProvider)
 			throws IOException {
 		this.yStart = yStartPosition;
 		return draw(tableLayout, pageProvider);
@@ -228,10 +226,10 @@ public class Table {
 	 * Draw the table at the top of the current page of a pageProvider
 	 *
 	 * @param pageProvider
-	 * @return
+	 * @return The {@linkplain DrawResult}
 	 * @throws IOException
 	 */
-	public float draw(final TableLayout tableLayout, final PageProvider pageProvider) throws IOException {
+	public DrawResult draw(final TableLayout tableLayout, final PageProvider pageProvider) throws IOException {
 		// if certain settings are not provided, default them
 		if (yStartNewPage == 0) {
 			yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
@@ -259,7 +257,7 @@ public class Table {
 				// check if header row height and first data row height can fit
 				// the page
 				// if not draw them on another side
-				if (isEndOfPage(tableLayout, getMinimumHeight())) {
+				if (isEndOfPage(drawContext, tableLayout, getMinimumHeight())) {
 					pageBreak(drawContext, tableLayout);
 				}
 			}
@@ -267,7 +265,7 @@ public class Table {
 		}
 		endTable(drawContext, tableLayout);
 
-		return yStart;
+		return drawContext.yPosition(yStart);
 	}
 
 	private void drawRow(final DrawContext drawContext, final TableLayout tableLayout, final Row row)
@@ -289,7 +287,7 @@ public class Table {
 		// we want to remove the borders as often as possible
 		drawContext.removeTopBorders(true);
 
-		if (isEndOfPage(tableLayout, row)) {
+		if (isEndOfPage(drawContext, tableLayout, row)) {
 			endTable(drawContext, tableLayout);
 			pageBreak(drawContext, tableLayout);
 
@@ -760,26 +758,27 @@ public class Table {
 		yStart -= tableLayout.margin();// add margin at bottom of table
 	}
 
-	private boolean isEndOfPage(final TableLayout tableLayout, final Row row) {
+	private boolean isEndOfPage(final DrawContext drawContext, final TableLayout tableLayout, final Row row) {
 		float currentY = yStart - row.getHeight();
 		boolean isEndOfPage = currentY <= tableLayout.pageBottomMargin();
 		if (isEndOfPage) {
-			setTableIsBroken(true);
+			drawContext.markTableBroken();
 		}
 
-		// If we are closer than bottom margin, consider this as
-		// the end of the currentPage
-		// If you add rows that are higher then bottom margin, this needs to be
-		// checked
-		// manually using getNextYPos
+		/*
+		 * If we are closer than bottom margin, consider this as the end of the
+		 * currentPage. If you add rows that are higher then bottom margin, this
+		 * needs to be checked manually using getNextYPos.
+		 */
 		return isEndOfPage;
 	}
 
-	private boolean isEndOfPage(final TableLayout tableLayout, final float freeSpaceForPageBreak) {
+	private boolean isEndOfPage(final DrawContext drawContext, final TableLayout tableLayout,
+			final float freeSpaceForPageBreak) {
 		float currentY = yStart - freeSpaceForPageBreak;
 		boolean isEndOfPage = currentY <= tableLayout.pageBottomMargin();
 		if (isEndOfPage) {
-			setTableIsBroken(true);
+			drawContext.markTableBroken();
 		}
 		return isEndOfPage;
 	}
@@ -801,18 +800,6 @@ public class Table {
 
 	public List<PDOutlineItem> getBookmarks() {
 		return bookmarks;
-	}
-
-	/**
-	 *
-	 * @param header
-	 * @deprecated Use {@link #addHeaderRow(Row)} instead, as it supports
-	 *             multiple header rows
-	 */
-	@Deprecated
-	public void setHeader(Row header) {
-		this.header.clear();
-		addHeaderRow(header);
 	}
 
 	/**
@@ -888,14 +875,6 @@ public class Table {
 
 	protected void setYStart(float yStart) {
 		this.yStart = yStart;
-	}
-
-	public boolean tableIsBroken() {
-		return tableIsBroken;
-	}
-
-	public void setTableIsBroken(boolean tableIsBroken) {
-		this.tableIsBroken = tableIsBroken;
 	}
 
 	public List<Row> getRows() {

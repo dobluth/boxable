@@ -17,13 +17,17 @@ import be.quodlibet.boxable.utils.PDStreamUtils;
  * @author dobluth
  *
  */
-class DrawContext {
+class DrawContext implements DrawResult {
 
 	private final PageProvider pageProvider;
 
 	private PDPageContentStream stream;
 
 	private boolean removeTopBorders = false;
+
+	private boolean tableIsBroken;
+
+	private float yPosition;
 
 	public DrawContext(final PageProvider pageProvider) {
 		this.pageProvider = pageProvider;
@@ -54,5 +58,25 @@ class DrawContext {
 	public DrawContext removeTopBorders(final boolean removeTopBorders) {
 		this.removeTopBorders = removeTopBorders;
 		return this;
+	}
+
+	public DrawContext markTableBroken() {
+		tableIsBroken = true;
+		return this;
+	}
+
+	@Override
+	public boolean tableIsBroken() {
+		return tableIsBroken;
+	}
+
+	public DrawContext yPosition(final float yPosition) {
+		this.yPosition = yPosition;
+		return this;
+	}
+
+	@Override
+	public float yPosition() {
+		return yPosition;
 	}
 }

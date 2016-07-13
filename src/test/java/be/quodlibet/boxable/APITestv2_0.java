@@ -95,7 +95,7 @@ public class APITestv2_0 {
 			table.getRows().get(0).getCells().get(0)
 					.setText("Test 1 -  Same table third time, on a different size page");
 			// Draw it a third time on the next page
-			float bottom = table.draw(tableLayout, provider);
+			float bottom = table.draw(tableLayout, provider).yPosition();
 			// draw ith a fourth time on the next page, but a little lower
 			table.draw(tableLayout, bottom - 100, provider);
 
