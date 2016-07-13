@@ -34,7 +34,6 @@ public class Table {
 	private List<Row> header = new ArrayList<>();
 	private List<Row> rows = new ArrayList<>();
 
-	private float yStartNewPage;
 	private float width;
 
 	// Defaults
@@ -44,9 +43,8 @@ public class Table {
 	public Table() {
 	}
 
-	public Table(float yStartNewPage, float width) throws IOException {
+	public Table(float width) throws IOException {
 		// Initialize table
-		this.yStartNewPage = yStartNewPage;
 		this.width = width;
 	}
 
@@ -224,11 +222,8 @@ public class Table {
 	public DrawResult draw(final TableLayout tableLayout, float yPosition, final PageProvider pageProvider)
 			throws IOException {
 		// if certain settings are not provided, default them
-		if (yStartNewPage == 0) {
-			yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
-		}
 		if (yPosition == 0) {
-			yPosition = yStartNewPage;
+			yPosition = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
 		}
 
 		// Since the page size can have changed, recalculate all column widths
@@ -785,9 +780,8 @@ public class Table {
 	private void pageBreak(final DrawContext drawContext, final TableLayout tableLayout) throws IOException {
 		drawContext.closeStream();
 		drawContext.pageProvider().nextPage();
-		yStartNewPage = drawContext.pageProvider().getCurrentPage().getMediaBox().getHeight()
-				- (2 * tableLayout.margin());
-		drawContext.yPosition(yStartNewPage - tableLayout.pageTopMargin());
+		drawContext.yPosition(drawContext.pageProvider().getCurrentPage().getMediaBox().getHeight()
+				- (2 * tableLayout.margin()) - tableLayout.pageTopMargin());
 		drawContext.stream();
 	}
 

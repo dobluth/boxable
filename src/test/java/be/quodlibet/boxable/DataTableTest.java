@@ -34,8 +34,6 @@ public class DataTableTest {
 		// Initialize table
 		float margin = 10;
 		float tableWidth = page.getMediaBox().getWidth() - (2 * margin);
-		float yStartNewPage = page.getMediaBox().getHeight() - (2 * margin);
-		float yStart = yStartNewPage;
 		float bottomMargin = 0;
 
 		// Create the data
@@ -46,7 +44,7 @@ public class DataTableTest {
 					"Row " + i + " Col Three", "Row " + i + " Col Four", "Row " + i + " Col Five")));
 		}
 
-		Table dataTable = new Table(yStart, tableWidth);
+		Table dataTable = new Table(tableWidth);
 		DataTable t = new DataTable(dataTable, page);
 		t.addListToTable(data, DataTable.HASHEADER);
 		dataTable.draw(new TableLayout().pageBottomMargin(bottomMargin),

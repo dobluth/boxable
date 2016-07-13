@@ -47,7 +47,7 @@ public class DataTable {
 		dpage.setMediaBox(page.getMediaBox());
 		dpage.setRotation(page.getRotation());
 		ddoc.addPage(dpage);
-		Table dummyTable = new Table(10f, table.getWidth());
+		Table dummyTable = new Table(table.getWidth());
 		Row dr = dummyTable.createRow(0f);
 		headerCellTemplate = dr.createCell(10f, "A", HorizontalAlignment.CENTER, VerticalAlignment.MIDDLE);
 		dataCellTemplateEven = dr.createCell(10f, "A", HorizontalAlignment.LEFT, VerticalAlignment.MIDDLE);

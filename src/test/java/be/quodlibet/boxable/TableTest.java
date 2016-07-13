@@ -36,14 +36,12 @@ public class TableTest {
 		// Initialize Document
 		PDDocument doc = new PDDocument();
 		PDPage page = addNewPage(doc);
-		float yStartNewPage = page.getMediaBox().getHeight() - (2 * margin);
 
 		// Initialize table
 		float tableWidth = page.getMediaBox().getWidth() - (2 * margin);
 		boolean drawContent = true;
-		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, tableWidth);
+		Table table = new Table(tableWidth);
 
 		// Create Header row
 		Row headerRow = table.createRow(15f);
@@ -195,12 +193,10 @@ public class TableTest {
 
 		// Initialize table
 		float tableWidth = page.getMediaBox().getWidth() - (2 * margin);
-		float yStartNewPage = page.getMediaBox().getHeight() - (2 * margin);
 		boolean drawContent = true;
 		boolean drawLines = true;
-		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, tableWidth);
+		Table table = new Table(tableWidth);
 
 		// Create Header row
 		Row headerRow = table.createRow(15f);
@@ -311,12 +307,10 @@ public class TableTest {
 
 		// Initialize table
 		float tableWidth = page.getMediaBox().getWidth() - (2 * margin);
-		float yStartNewPage = page.getMediaBox().getHeight() - (2 * margin);
 		boolean drawContent = true;
 		boolean drawLines = true;
-		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, tableWidth);
+		Table table = new Table(tableWidth);
 
 		// Create Header row
 		Row row = table.createRow(15f);
@@ -391,12 +385,10 @@ public class TableTest {
 
 		// Initialize table
 		float tableWidth = page.getMediaBox().getWidth() - (2 * margin);
-		float yStartNewPage = page.getMediaBox().getHeight() - (2 * margin);
 		boolean drawContent = true;
 		boolean drawLines = true;
-		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, tableWidth);
+		Table table = new Table(tableWidth);
 
 		// Create header row
 		Row headerRow = table.createRow(15f);
@@ -505,12 +497,10 @@ public class TableTest {
 
 		// Initialize table
 		float tableWidth = page.getMediaBox().getWidth() - (2 * margin);
-		float yStartNewPage = page.getMediaBox().getHeight() - (2 * margin);
 		boolean drawContent = true;
 		boolean drawLines = true;
-		float yStart = yStartNewPage;
 		float bottomMargin = 70;
-		Table table = new Table(yStart, tableWidth);
+		Table table = new Table(tableWidth);
 
 		// Create Header row
 		Row row = table.createRow(15f);
