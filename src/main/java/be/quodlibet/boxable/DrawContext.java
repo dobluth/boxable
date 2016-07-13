@@ -79,4 +79,9 @@ class DrawContext implements DrawResult {
 	public float yPosition() {
 		return yPosition;
 	}
+
+	public DrawContext advanceY(final float distance) {
+		yPosition -= distance;
+		return this;
+	}
 }

@@ -35,7 +35,6 @@ public class Table {
 	private List<Row> rows = new ArrayList<>();
 
 	private float yStartNewPage;
-	private float yStart;
 	private float width;
 
 	// Defaults
@@ -45,13 +44,6 @@ public class Table {
 	public Table() {
 	}
 
-	public Table(float yStart, float yStartNewPage, float width) throws IOException {
-		// Initialize table
-		this.yStartNewPage = yStartNewPage;
-		this.width = width;
-		this.yStart = yStart;
-	}
-
 	public Table(float yStartNewPage, float width) throws IOException {
 		// Initialize table
 		this.yStartNewPage = yStartNewPage;
@@ -59,17 +51,18 @@ public class Table {
 	}
 
 	public void drawTitle(final TableLayout tableLayout, final PageProvider pageProvider, String title, PDFont font,
-			int fontSize, float tableWidth, float height, String alignment, float freeSpaceForPageBreak,
-			boolean drawHeaderMargin) throws IOException {
-		drawTitle(tableLayout, pageProvider, title, font, fontSize, tableWidth, height, alignment,
+			int fontSize, final float yPosition, float tableWidth, float height, String alignment,
+			float freeSpaceForPageBreak, boolean drawHeaderMargin) throws IOException {
+		drawTitle(tableLayout, pageProvider, title, font, fontSize, yPosition, tableWidth, height, alignment,
 				freeSpaceForPageBreak, null, drawHeaderMargin);
 	}
 
 	public void drawTitle(final TableLayout tableLayout, final PageProvider pageProvider, String title, PDFont font,
-			int fontSize, float tableWidth, float height, String alignment, float freeSpaceForPageBreak,
-			WrappingFunction wrappingFunction, boolean drawHeaderMargin) throws IOException {
+			int fontSize, final float yPosition, float tableWidth, float height, String alignment,
+			float freeSpaceForPageBreak, WrappingFunction wrappingFunction, boolean drawHeaderMargin)
+			throws IOException {
 
-		final DrawContext drawContext = new DrawContext(pageProvider);
+		final DrawContext drawContext = new DrawContext(pageProvider).yPosition(yPosition);
 		// ensure a stream is open
 		drawContext.stream();
 
@@ -80,28 +73,28 @@ public class Table {
 		if (title == null) {
 			// if you don't have title just use the height of maxTextBox in your
 			// "row"
-			yStart -= height;
+			drawContext.advanceY(height);
 		} else {
 			PDPageContentStream articleTitle = PDStreamUtils.createStream(pageProvider);
 			Paragraph paragraph = new Paragraph(title, font, fontSize, tableWidth, HorizontalAlignment.get(alignment),
 					wrappingFunction);
 			paragraph.setDrawDebug(tableLayout.drawDebug());
-			yStart = paragraph.write(articleTitle, tableLayout.margin(), yStart);
+			drawContext.yPosition(paragraph.write(articleTitle, tableLayout.margin(), drawContext.yPosition()));
 			if (paragraph.getHeight() < height) {
-				yStart -= (height - paragraph.getHeight());
+				drawContext.advanceY(height - paragraph.getHeight());
 			}
 
 			articleTitle.close();
 
 			if (tableLayout.drawDebug()) {
 				// margin
-				PDStreamUtils.rect(drawContext.stream(), tableLayout.margin(), yStart, width,
+				PDStreamUtils.rect(drawContext.stream(), tableLayout.margin(), drawContext.yPosition(), width,
 						tableLayout.headerBottomMargin(), Color.CYAN);
 			}
 		}
 
 		if (drawHeaderMargin) {
-			yStart -= tableLayout.headerBottomMargin();
+			drawContext.advanceY(tableLayout.headerBottomMargin());
 		}
 	}
 
@@ -204,43 +197,43 @@ public class Table {
 				c.setWidth(((Cell) lastHeaderRow.getCells().get(i)).getWidth());
 			}
 		}
+	}
 
+	/**
+	 * Draw the table at the top of the current page of a pageProvider
+	 *
+	 * @param tableLayout
+	 * @param pageProvider
+	 * @return The {@linkplain DrawResult}
+	 * @throws IOException
+	 */
+	public DrawResult draw(final TableLayout tableLayout, final PageProvider pageProvider) throws IOException {
+		return draw(tableLayout, 0, pageProvider);
 	}
 
 	/**
 	 * Draw the table on a specific vertical Position on the current page of a
 	 * pageProvider
 	 *
-	 * @param yStartPosition
+	 * @param tableLayout
+	 * @param yPosition
 	 * @param pageProvider
 	 * @return The {@linkplain DrawResult}
 	 * @throws IOException
 	 */
-	public DrawResult draw(final TableLayout tableLayout, final float yStartPosition, final PageProvider pageProvider)
+	public DrawResult draw(final TableLayout tableLayout, float yPosition, final PageProvider pageProvider)
 			throws IOException {
-		this.yStart = yStartPosition;
-		return draw(tableLayout, pageProvider);
-	}
-
-	/**
-	 * Draw the table at the top of the current page of a pageProvider
-	 *
-	 * @param pageProvider
-	 * @return The {@linkplain DrawResult}
-	 * @throws IOException
-	 */
-	public DrawResult draw(final TableLayout tableLayout, final PageProvider pageProvider) throws IOException {
 		// if certain settings are not provided, default them
 		if (yStartNewPage == 0) {
 			yStartNewPage = pageProvider.getCurrentPage().getMediaBox().getHeight() - (2 * tableLayout.margin());
 		}
-		if (yStart == 0) {
-			yStart = yStartNewPage;
+		if (yPosition == 0) {
+			yPosition = yStartNewPage;
 		}
 
 		// Since the page size can have changed, recalculate all column widths
 		this.width = pageProvider.getCurrentPage().getMediaBox().getWidth() - (2 * tableLayout.margin());
-		for (Row r : rows) {
+		for (final Row r : rows) {
 			r.initWidths();
 		}
 
@@ -248,7 +241,7 @@ public class Table {
 		// width based on the content.
 		initColumnWidths(tableLayout);
 
-		final DrawContext drawContext = new DrawContext(pageProvider);
+		final DrawContext drawContext = new DrawContext(pageProvider).yPosition(yPosition);
 		// ensure the stream is open
 		drawContext.stream();
 
@@ -265,7 +258,7 @@ public class Table {
 		}
 		endTable(drawContext, tableLayout);
 
-		return drawContext.yPosition(yStart);
+		return drawContext;
 	}
 
 	private void drawRow(final DrawContext drawContext, final TableLayout tableLayout, final Row row)
@@ -279,7 +272,7 @@ public class Table {
 		if (row.getBookmark() != null) {
 			PDPageXYZDestination bookmarkDestination = new PDPageXYZDestination();
 			bookmarkDestination.setPage(drawContext.pageProvider().getCurrentPage());
-			bookmarkDestination.setTop((int) yStart);
+			bookmarkDestination.setTop((int) drawContext.yPosition());
 			row.getBookmark().setDestination(bookmarkDestination);
 			this.addBookmark(row.getBookmark());
 		}
@@ -339,7 +332,7 @@ public class Table {
 			if (cell instanceof ImageCell) {
 				final ImageCell imageCell = (ImageCell) cell;
 
-				cursorY = yStart - cell.getTopPadding()
+				cursorY = drawContext.yPosition() - cell.getTopPadding()
 						- (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth());
 
 				// image cell vertical alignment
@@ -379,7 +372,7 @@ public class Table {
 				stream.setFont(cell.getFont(), cell.getFontSize());
 
 				if (cell.isTextRotated()) {
-					cursorY = yStart - cell.getInnerHeight() - cell.getTopPadding()
+					cursorY = drawContext.yPosition() - cell.getInnerHeight() - cell.getTopPadding()
 							- (cell.getTopBorder() != null ? cell.getTopBorder().getWidth() : 0);
 
 					switch (cell.getAlign()) {
@@ -414,7 +407,8 @@ public class Table {
 					// position at top of current cell descending by font height
 					// - font descent, because we are
 					// positioning the base line here
-					cursorY = yStart - cell.getTopPadding() - FontUtils.getHeight(cell.getFont(), cell.getFontSize())
+					cursorY = drawContext.yPosition() - cell.getTopPadding()
+							- FontUtils.getHeight(cell.getFont(), cell.getFontSize())
 							- FontUtils.getDescent(cell.getFont(), cell.getFontSize())
 							- (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth());
 
@@ -423,14 +417,15 @@ public class Table {
 						// top padding
 						PDStreamUtils.rect(stream,
 								cursorX + (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth()),
-								yStart - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
+								drawContext.yPosition()
+										- (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
 								cell.getWidth() - (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth())
 										- (cell.getRightBorder() == null ? 0 : cell.getRightBorder().getWidth()),
 								cell.getTopPadding(), Color.RED);
 						// bottom padding
 						PDStreamUtils.rect(stream,
 								cursorX + (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth()),
-								yStart - cell.getHeight()
+								drawContext.yPosition() - cell.getHeight()
 										+ (cell.getBottomBorder() == null ? 0 : cell.getBottomBorder().getWidth())
 										+ cell.getBottomPadding(),
 								cell.getWidth() - (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth())
@@ -439,7 +434,8 @@ public class Table {
 						// left padding
 						PDStreamUtils.rect(stream,
 								cursorX + (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth()),
-								yStart - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
+								drawContext.yPosition()
+										- (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
 								cell.getLeftPadding(),
 								cell.getHeight() - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth())
 										- (cell.getBottomBorder() == null ? 0 : cell.getBottomBorder().getWidth()),
@@ -448,7 +444,8 @@ public class Table {
 						PDStreamUtils.rect(stream,
 								cursorX + cell.getWidth()
 										- (cell.getRightBorder() == null ? 0 : cell.getRightBorder().getWidth()),
-								yStart - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
+								drawContext.yPosition()
+										- (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth()),
 								-cell.getRightPadding(),
 								cell.getHeight() - (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth())
 										- (cell.getBottomBorder() == null ? 0 : cell.getBottomBorder().getWidth()),
@@ -652,9 +649,9 @@ public class Table {
 			// the next cell
 			cursorX = cellStartX + cell.getWidth();
 		}
-		// Set Y position for next row
-		yStart = yStart - row.getHeight();
 
+		// Set Y position for next row
+		drawContext.advanceY(row.getHeight());
 	}
 
 	private void drawVerticalLines(final DrawContext drawContext, final TableLayout tableLayout, final Row row)
@@ -668,7 +665,7 @@ public class Table {
 		while (cellIterator.hasNext()) {
 			Cell cell = cellIterator.next();
 
-			fillCellColor(drawContext, cell, yStart, xStart, cellIterator);
+			fillCellColor(drawContext, cell, drawContext.yPosition(), xStart, cellIterator);
 
 			drawCellBorders(drawContext, row, cell, xStart, xEnd);
 
@@ -680,12 +677,12 @@ public class Table {
 	private void drawCellBorders(final DrawContext drawContext, final Row row, final Cell cell, final float xStart,
 			final float xEnd) throws IOException {
 
-		float yEnd = yStart - row.getHeight();
+		float yEnd = drawContext.yPosition() - row.getHeight();
 
 		// top
 		LineStyle topBorder = cell.getTopBorder();
 		if (topBorder != null) {
-			float y = yStart - topBorder.getWidth() / 2;
+			float y = drawContext.yPosition() - topBorder.getWidth() / 2;
 			drawLine(drawContext, xStart, y, xStart + cell.getWidth(), y, topBorder);
 		}
 
@@ -693,7 +690,8 @@ public class Table {
 		LineStyle rightBorder = cell.getRightBorder();
 		if (rightBorder != null) {
 			float x = xStart + cell.getWidth() - rightBorder.getWidth() / 2;
-			drawLine(drawContext, x, yStart - (topBorder == null ? 0 : topBorder.getWidth()), x, yEnd, rightBorder);
+			drawLine(drawContext, x, drawContext.yPosition() - (topBorder == null ? 0 : topBorder.getWidth()), x, yEnd,
+					rightBorder);
 		}
 
 		// bottom
@@ -708,8 +706,8 @@ public class Table {
 		LineStyle leftBorder = cell.getLeftBorder();
 		if (leftBorder != null) {
 			float x = xStart + leftBorder.getWidth() / 2;
-			drawLine(drawContext, x, yStart, x, yEnd + (bottomBorder == null ? 0 : bottomBorder.getWidth()),
-					leftBorder);
+			drawLine(drawContext, x, drawContext.yPosition(), x,
+					yEnd + (bottomBorder == null ? 0 : bottomBorder.getWidth()), leftBorder);
 		}
 
 	}
@@ -755,11 +753,12 @@ public class Table {
 
 	private void endTable(final DrawContext drawContext, final TableLayout tableLayout) throws IOException {
 		drawContext.closeStream();
-		yStart -= tableLayout.margin();// add margin at bottom of table
+		// add margin at bottom of table
+		drawContext.advanceY(tableLayout.margin());
 	}
 
 	private boolean isEndOfPage(final DrawContext drawContext, final TableLayout tableLayout, final Row row) {
-		float currentY = yStart - row.getHeight();
+		float currentY = drawContext.yPosition() - row.getHeight();
 		boolean isEndOfPage = currentY <= tableLayout.pageBottomMargin();
 		if (isEndOfPage) {
 			drawContext.markTableBroken();
@@ -775,7 +774,7 @@ public class Table {
 
 	private boolean isEndOfPage(final DrawContext drawContext, final TableLayout tableLayout,
 			final float freeSpaceForPageBreak) {
-		float currentY = yStart - freeSpaceForPageBreak;
+		float currentY = drawContext.yPosition() - freeSpaceForPageBreak;
 		boolean isEndOfPage = currentY <= tableLayout.pageBottomMargin();
 		if (isEndOfPage) {
 			drawContext.markTableBroken();
@@ -788,7 +787,7 @@ public class Table {
 		drawContext.pageProvider().nextPage();
 		yStartNewPage = drawContext.pageProvider().getCurrentPage().getMediaBox().getHeight()
 				- (2 * tableLayout.margin());
-		this.yStart = yStartNewPage - tableLayout.pageTopMargin();
+		drawContext.yPosition(yStartNewPage - tableLayout.pageTopMargin());
 		drawContext.stream();
 	}
 
@@ -871,10 +870,6 @@ public class Table {
 		}
 
 		return header.get(header.size() - 1);
-	}
-
-	protected void setYStart(float yStart) {
-		this.yStart = yStart;
 	}
 
 	public List<Row> getRows() {
