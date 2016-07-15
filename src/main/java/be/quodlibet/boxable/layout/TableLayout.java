@@ -3,6 +3,9 @@ package be.quodlibet.boxable.layout;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+
 import be.quodlibet.boxable.Cell;
 import be.quodlibet.boxable.layout.cell.CellLayouter;
 
@@ -18,6 +21,12 @@ import be.quodlibet.boxable.layout.cell.CellLayouter;
 public class TableLayout {
 
 	private final List<CellLayouter> cellLayouters = new ArrayList<>();
+
+	private PDFont font = PDType1Font.HELVETICA;
+
+	private PDFont fontBold = PDType1Font.HELVETICA_BOLD;
+
+	private float fontSize = 6;
 
 	private float pageTopMargin = 10;
 
@@ -111,6 +120,39 @@ public class TableLayout {
 
 	public TableLayout drawDebug(final boolean drawDebug) {
 		this.drawDebug = drawDebug;
+		return this;
+	}
+
+	public PDFont font() {
+		return font;
+	}
+
+	public TableLayout font(final PDFont font) {
+		if (font == null) {
+			throw new IllegalArgumentException("Font must not be null");
+		}
+		this.font = font;
+		return this;
+	}
+
+	public PDFont fontBold() {
+		return fontBold;
+	}
+
+	public TableLayout fontBold(final PDFont fontBold) {
+		if (fontBold == null) {
+			throw new IllegalArgumentException("Bold font must not be null");
+		}
+		this.fontBold = fontBold;
+		return this;
+	}
+
+	public float fontSize() {
+		return fontSize;
+	}
+
+	public TableLayout fontSize(final float fontSize) {
+		this.fontSize = fontSize;
 		return this;
 	}
 }

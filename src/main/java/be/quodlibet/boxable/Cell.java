@@ -22,8 +22,8 @@ public class Cell {
 
 	private PDFont font = PDType1Font.HELVETICA;
 	private PDFont fontBold = PDType1Font.HELVETICA_BOLD;
-
 	private float fontSize = 8;
+
 	private Color fillColor;
 	private Color textColor = Color.BLACK;
 	private Row row;
@@ -230,30 +230,6 @@ public class Cell {
 
 	/**
 	 * <p>
-	 * Gets appropriate {@link PDFont} for current cell.
-	 * </p>
-	 *
-	 * @return {@link PDFont} for current cell
-	 * @throws IllegalArgumentException
-	 *             if <code>font</code> is not set.
-	 */
-	public PDFont getFont() {
-		if (font == null) {
-			// Get the default font for the row
-			font = row.getTable().getFont();
-		}
-		if (font == null) {
-			throw new IllegalArgumentException("Font not set.");
-		}
-		if (isHeaderCell) {
-			return fontBold;
-		} else {
-			return font;
-		}
-	}
-
-	/**
-	 * <p>
 	 * Sets appropriate {@link PDFont} for current cell.
 	 * </p>
 	 *
@@ -265,6 +241,15 @@ public class Cell {
 
 		// paragraph invalidated
 		paragraph = null;
+	}
+
+	// TODO: remove me!
+	public PDFont getFont() {
+		if (isHeaderCell) {
+			return fontBold;
+		} else {
+			return font;
+		}
 	}
 
 	/**
@@ -357,9 +342,9 @@ public class Cell {
 	 * calculation:
 	 * <ol>
 	 * <li>Rotated value - cell's height is equal to overall text length in the
-	 * cell with necessery paddings (top,bottom)</li>
+	 * cell with necessary paddings (top,bottom)</li>
 	 * <li>Normal value - cell's height is equal to {@link Paragraph}'s height
-	 * with necessery paddings (top,bottom)</li>
+	 * with necessary paddings (top,bottom)</li>
 	 * </ol>
 	 * </p>
 	 *
@@ -699,7 +684,6 @@ public class Cell {
 			this.leftBorderStyle = null;// if left border wasn't set, don't set
 										// it now
 		}
-		this.font = sourceCell.getFont();// otherwise paragraph gets invalidated
 		this.fontBold = sourceCell.getFontBold();
 		setFillColor(sourceCell.getFillColor());
 		setTextColor(sourceCell.getTextColor());
@@ -757,9 +741,6 @@ public class Cell {
 	 */
 	public Boolean hasSameStyle(Cell sourceCell) {
 		if (!sourceCell.getTopBorder().equals(getTopBorder())) {
-			return false;
-		}
-		if (!sourceCell.getFont().equals(getFont())) {
 			return false;
 		}
 		if (!sourceCell.getFontBold().equals(getFontBold())) {

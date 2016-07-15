@@ -4,7 +4,6 @@
  */
 package be.quodlibet.boxable;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -199,10 +198,6 @@ public class Row {
 		return height;
 	}
 
-	public float getLineHeight() throws IOException {
-		return height;
-	}
-
 	public void setHeight(float height) {
 		this.height = height;
 	}
@@ -215,10 +210,6 @@ public class Row {
 		return cells.size();
 	}
 
-	public void setCells(List<Cell> cells) {
-		this.cells = cells;
-	}
-
 	public float getWidth() {
 		return table.getWidth();
 	}
@@ -227,7 +218,7 @@ public class Row {
 		return bookmark;
 	}
 
-	public void setBookmark(PDOutlineItem bookmark) {
+	public void setBookmark(final PDOutlineItem bookmark) {
 		this.bookmark = bookmark;
 	}
 
@@ -254,8 +245,7 @@ public class Row {
 	}
 
 	public void initWidths() {
-
-		for (Cell c : cells) {
+		for (final Cell c : cells) {
 			c.setWidth(0);
 		}
 	}

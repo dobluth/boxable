@@ -15,7 +15,6 @@ import java.util.Map;
 
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageXYZDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.util.Matrix;
@@ -35,10 +34,6 @@ public class Table {
 	private List<Row> rows = new ArrayList<>();
 
 	private float width;
-
-	// Defaults
-	PDFont font = PDType1Font.HELVETICA;
-	float fontSize = 6;
 
 	public Table() {
 	}
@@ -153,10 +148,15 @@ public class Table {
 		if (!hasWidthPct) {
 			// calculate the total width of the columns
 			float totalWidth = 0.0f;
-			for (Cell c : cells) {
-
+			PDFont font;
+			for (final Cell c : cells) {
+				if (c.isHeaderCell()) {
+					font = tableLayout.fontBold();
+				} else {
+					font = tableLayout.font();
+				}
 				String cellValue = c.getText();
-				float textWidth = FontUtils.getStringWidth(c.getFont(), " " + cellValue + " ", c.getFontSize());
+				float textWidth = FontUtils.getStringWidth(font, " " + cellValue + " ", c.getFontSize());
 				totalWidth += textWidth;
 			}
 			// totalWidth has the total width we need to have all columns full
@@ -164,9 +164,14 @@ public class Table {
 			// calculate a factor to reduce/increase size by to make it fit in
 			// our table
 			float sizefactor = getWidth() / totalWidth;
-			for (Cell c : cells) {
+			for (final Cell c : cells) {
 				String cellValue = c.getText();
-				float textWidth = FontUtils.getStringWidth(c.getFont(), " " + cellValue + " ", c.getFontSize());
+				if (c.isHeaderCell()) {
+					font = tableLayout.fontBold();
+				} else {
+					font = tableLayout.font();
+				}
+				float textWidth = FontUtils.getStringWidth(font, " " + cellValue + " ", c.getFontSize());
 				float widthPct = textWidth * 100 / getWidth();
 				// apply width factor
 				widthPct = widthPct * sizefactor;
@@ -358,13 +363,15 @@ public class Table {
 				imageCell.getImage().draw(drawContext.pageProvider().getDocument(), stream, cursorX, cursorY);
 
 			} else {
-				// no text without font
-				if (cell.getFont() == null) {
-					throw new IllegalArgumentException("Font is null on Cell=" + cell.getText());
+				final PDFont font;
+				if (cell.isHeaderCell()) {
+					font = tableLayout.fontBold();
+				} else {
+					font = tableLayout.font();
 				}
 
 				// font settings
-				stream.setFont(cell.getFont(), cell.getFontSize());
+				stream.setFont(font, cell.getFontSize());
 
 				if (cell.isTextRotated()) {
 					cursorY = drawContext.yPosition() - cell.getInnerHeight() - cell.getTopPadding()
@@ -384,8 +391,8 @@ public class Table {
 					// position of the base line
 					cursorX += cell.getLeftPadding()
 							+ (cell.getLeftBorder() == null ? 0 : cell.getLeftBorder().getWidth())
-							+ FontUtils.getHeight(cell.getFont(), cell.getFontSize())
-							+ FontUtils.getDescent(cell.getFont(), cell.getFontSize());
+							+ FontUtils.getHeight(font, cell.getFontSize())
+							+ FontUtils.getDescent(font, cell.getFontSize());
 
 					switch (cell.getValign()) {
 					case TOP:
@@ -403,8 +410,8 @@ public class Table {
 					// - font descent, because we are
 					// positioning the base line here
 					cursorY = drawContext.yPosition() - cell.getTopPadding()
-							- FontUtils.getHeight(cell.getFont(), cell.getFontSize())
-							- FontUtils.getDescent(cell.getFont(), cell.getFontSize())
+							- FontUtils.getHeight(font, cell.getFontSize())
+							- FontUtils.getDescent(font, cell.getFontSize())
 							- (cell.getTopBorder() == null ? 0 : cell.getTopBorder().getWidth());
 
 					if (tableLayout.drawDebug()) {
@@ -868,22 +875,6 @@ public class Table {
 
 	public List<Row> getRows() {
 		return rows;
-	}
-
-	public PDFont getFont() {
-		return font;
-	}
-
-	public void setFont(PDFont font) {
-		this.font = font;
-	}
-
-	public float getFontSize() {
-		return fontSize;
-	}
-
-	public void setFontSize(float fontSize) {
-		this.fontSize = fontSize;
 	}
 
 }
